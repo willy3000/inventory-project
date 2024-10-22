@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import useScanDetecton from "use-scan-detection";
+import LoadingIndicator from "../hocs/LoadingIndicator";
+import SerialNumberInput from "./serial-number-input";
 
 export default function UpdateStockModal(props) {
   const { setShowAddItemModal, getGroupItems, itemGroup } = props;
   const user = useSelector((state) => state.user.user);
+  const [serialNumberModal, setSerialNumberModal] = useState(false);
 
   const [selectedImage, setSelectedImage] = React.useState(null);
   const [formData, setFormData] = React.useState({
@@ -17,22 +21,6 @@ export default function UpdateStockModal(props) {
   });
   const [imageFile, setImageFile] = useState(null);
 
-  const handleUpdateStock = async () => {
-
-    try {
-      const url = "http://localhost:5000/api/inventory/addItem";
-      const res = await axios.post(`${url}/${user?.userId}/${itemGroup.id}`, formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (res.data.success) {
-        getGroupItems();
-      }
-    } catch (err) {
-      alert(err.message);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,9 +43,14 @@ export default function UpdateStockModal(props) {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    handleUpdateStock();
+    setSerialNumberModal(true);
+    // handleUpdateStock();
     // setShowAddItemModal(false);
   };
+
+  if (serialNumberModal) {
+    return <SerialNumberInput {...{ formData, setFormData, user, itemGroup, getGroupItems, setSerialNumberModal }} />;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -75,17 +68,6 @@ export default function UpdateStockModal(props) {
               className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               name="name"
               value={formData.name}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="relative">
-            <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input
-              type="text"
-              placeholder="Serial No."
-              className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              name="serialNumber"
-              value={formData.serialNumber}
               onChange={handleInputChange}
             />
           </div>
@@ -176,7 +158,7 @@ export default function UpdateStockModal(props) {
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center"
             >
               <i className="fas fa-check mr-2"></i>
-              Update Stock
+              Proceed
             </button>
           </div>
         </form>

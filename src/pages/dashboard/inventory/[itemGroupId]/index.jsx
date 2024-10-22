@@ -47,7 +47,7 @@ export default function ItemGroup() {
     return <LoadingIndicator />;
   }
 
-  return <ItemGroupTable {...{ items: groupItems, getGroupItems, itemGroup }} />;
+  return <ItemGroupTable {...{ items: groupItems, getGroupItems, itemGroup, user }} />;
 }
 
 ItemGroup.getLayout = function getLayout(page) {

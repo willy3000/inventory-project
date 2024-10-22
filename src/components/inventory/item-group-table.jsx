@@ -4,41 +4,94 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import AddItemModal from "./add-item-modal";
 import UpdateStockModal from "./update-stock-modal";
+import EmployeeSelectModal from "../employees/employee-select-modal";
+import axios from "axios";
+import { setEmployees } from "@/store/slices/employeesSlice";
 
 export default function ItemGroupTable(props) {
-  const { items, getGroupItems, itemGroup } = props;
+  const { items, getGroupItems, itemGroup, user } = props;
   const [showAddItemModal, setShowAddItemModal] = React.useState(false);
+  const [showEmployeeSelectModal, setEmployeeSelectModal] =
+    React.useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const employees = useSelector((state) => state.employees.employees);
   const itemsPerPage = 5;
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  const handleViewItemGroup = (id) => {
-    router.push(`inventory/${id}`);
+  const handleViewItemDetails = (id) => {
+    router.push(`${router.asPath}/${id}`);
+  };
+
+  const getEmployees = async () => {
+    const url = "http://localhost:5000/api/employees/getEmployees";
+    console.log("fetching employees");
+    try {
+      const res = await axios.get(`${url}/${user?.userId}`);
+      console.log("dipatching", res.data.result);
+      dispatch(setEmployees(res.data.result));
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   console.log("items", items);
 
   const getImageUrl = (imgFile) => {
-    const bufferData = imgFile.buffer;
+    if (imgFile) {
+      const bufferData = imgFile?.buffer;
 
-    const byteCharacters = atob(bufferData);
+      const byteCharacters = atob(bufferData);
 
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
+
+      const imageUrl = URL.createObjectURL(imageBlob);
+      return imageUrl;
     }
-    const byteArray = new Uint8Array(byteNumbers);
-
-    const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
-
-    const imageUrl = URL.createObjectURL(imageBlob);
-    return imageUrl;
   };
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   console.log(items);
+
+  const handleEmployeeSelect = (e, item) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+    setEmployeeSelectModal(true);
+  };
+
+  const getAssignedEmployee = (employeeId) => {
+    const employee = employees.find((employee) => employee.id === employeeId);
+
+    if (!employee) {
+      return null;
+    }
+
+    return (
+      <div className="flex items-center bg-gray-600 rounded-full p-2 max-w-fit">
+        <img
+          src={getImageUrl(employee?.image)}
+          alt={`${employee?.name}`}
+          className="w-6 h-6 rounded-full mr-2"
+        />
+        <span className="text-s truncate max-w-[100px]">
+          {employee?.employeeName}
+        </span>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    getEmployees();
+  }, []);
 
   return (
     <div className="overflow-x-auto h-[70vh] overflow-y-auto">
@@ -101,8 +154,11 @@ export default function ItemGroupTable(props) {
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
                 status
               </th>
-              <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
+              <th className="p-4 text-gray-200 font-semibold bg-gray-700">
                 Assigned To
+              </th>
+              <th className="p-4 text-gray-200 font-semibold bg-gray-700 text-center">
+                Actions
               </th>
             </tr>
           </thead>
@@ -111,7 +167,7 @@ export default function ItemGroupTable(props) {
               <tr
                 key={item.id}
                 className="transition-colors hover:bg-gray-700"
-                onClick={() => handleViewItemGroup(item.id)}
+                onClick={() => handleViewItemDetails(item.id)}
               >
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
                   {item.serialNumber}
@@ -132,7 +188,21 @@ export default function ItemGroupTable(props) {
                   {item.status}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.assignedTo}
+                  {item?.assignedTo ? (
+                    getAssignedEmployee(item?.assignedTo)
+                  ) : (
+                    <button
+                      onClick={(e) => handleEmployeeSelect(e, item)}
+                      className="px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-slate-500 disabled:opacity-50 flex items-center"
+                    >
+                      Assign
+                    </button>
+                  )}
+                </td>
+                <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
+                  <button>
+                    <i className="fa fa-arrow-right"></i>
+                  </button>
                 </td>
                 {/* <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
                   <button>
@@ -179,7 +249,19 @@ export default function ItemGroupTable(props) {
         </nav>
       </div>
       {showAddItemModal && (
-        <UpdateStockModal {...{ setShowAddItemModal, getGroupItems, itemGroup }} />
+        <UpdateStockModal
+          {...{ setShowAddItemModal, getGroupItems, itemGroup }}
+        />
+      )}
+      {showEmployeeSelectModal && (
+        <EmployeeSelectModal
+          {...{
+            setEmployeeSelectModal,
+            user,
+            item: selectedItem,
+            getGroupItems,
+          }}
+        />
       )}
     </div>
   );

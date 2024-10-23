@@ -6,6 +6,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setItems } from "@/store/slices/itemsSlice";
 import { setEmployees } from "@/store/slices/employeesSlice";
+import { BASE_URL } from "@/utils/constants";
 
 export default function Employees() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,7 @@ export default function Employees() {
   const user = useSelector((state) => state.user.user);
 
   const getEmployees = async () => {
-    const url = "http://localhost:5000/api/employees/getEmployees";
+    const url = `${BASE_URL}/api/employees/getEmployees`;
     console.log("fetching employees");
     try {
       const res = await axios.get(`${url}/${user?.userId}`);

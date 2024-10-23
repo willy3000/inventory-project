@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import useScanDetection from "use-scan-detection";
 import axios from "axios";
+import { BASE_URL } from "@/utils/constants";
 
 export default function SerialNumberInput(props) {
   const {
@@ -28,7 +29,7 @@ export default function SerialNumberInput(props) {
 
   const handleUpdateStock = async (frmData) => {
     try {
-      const url = "http://localhost:5000/api/inventory/addItem";
+      const url = `${BASE_URL}/api/inventory/addItem`;
       const res = await axios.post(
         `${url}/${user?.userId}/${itemGroup.id}`,
         frmData,

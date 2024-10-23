@@ -3,6 +3,7 @@ import axios from "axios";
 import { setEmployees } from "@/store/slices/employeesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingIndicator from "../hocs/LoadingIndicator";
+import { BASE_URL } from "@/utils/constants";
 
 export default function EmployeeSelectModal(props) {
   const { setEmployeeSelectModal, user, item, getGroupItems } = props;
@@ -12,7 +13,7 @@ export default function EmployeeSelectModal(props) {
   const dispatch = useDispatch();
 
   const getEmployees = async () => {
-    const url = "http://localhost:5000/api/employees/getEmployees";
+    const url = `${BASE_URL}/api/employees/getEmployees`;
     console.log("fetching employees");
     try {
       const res = await axios.get(`${url}/${user?.userId}`);
@@ -24,9 +25,10 @@ export default function EmployeeSelectModal(props) {
     setLoading(false);
   };
 
-  const handleAssign = async () => {
+  const handleAssign = async (e) => {
+    e.preventDefault();
     try {
-      const url = "http://localhost:5000/api/inventory/assignItem";
+      const url = `${BASE_URL}/api/inventory/assignItem`;
       const res = await axios.post(
         url,
         {
@@ -140,7 +142,7 @@ export default function EmployeeSelectModal(props) {
                 : "border border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center"
             }
             disabled={selectedEmployee === null}
-            onClick={() => handleAssign()}
+            onClick={(e) => handleAssign(e)}
           >
             <i className="fas fa-check mr-2"></i>
             Confirm

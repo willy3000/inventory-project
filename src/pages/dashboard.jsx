@@ -18,13 +18,13 @@ function Layout({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log
+    console.log;
     if (router.pathname === "/dashboard") {
       router.replace("/dashboard/inventory");
     }
-    const currentRoute = router.pathname.split('/')[2] || 'inventory'; // Default to 'inventory' if no sub-route
+    const currentRoute = router.pathname.split("/")[2] || "inventory"; // Default to 'inventory' if no sub-route
     setActiveTab(currentRoute);
-    console.log(router)
+    console.log(router);
   }, []);
 
   const handleTabChange = (title) => {
@@ -92,9 +92,18 @@ function Layout({ children }) {
 
   const ContentArea = () => (
     <div className="bg-gray-800 p-6 rounded-xl shadow-sm">
-      <h2 className="text-2xl font-bold mb-4 text-gray-200 capitalize">
-        {activeTab}
-      </h2>
+      <div className="flex items-baseline gap-2 hover:cursor-pointer">
+        {router.pathname.split("/").length > 3 && (
+          <i
+            className={`fas fa-arrow-left-long text-lg`}
+            onClick={() => router.back()}
+          ></i>
+        )}
+
+        <h2 className="text-2xl font-bold mb-4 text-gray-200 capitalize">
+          {router.pathname.split("/")[2] || ""}
+        </h2>
+      </div>
       {children}
     </div>
   );
@@ -137,7 +146,7 @@ function Layout({ children }) {
                   Welcome back!
                 </h2>
                 <p className="text-gray-400">
-                  Here's what's happening with your business today.
+                  {"Here's what's happening with your business today"}
                 </p>
               </div>
               <UserMenu />

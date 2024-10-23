@@ -3,9 +3,10 @@ import LoadingIndicator from "../hocs/LoadingIndicator";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import AddItemModal from "./add-item-modal";
+import { BASE_URL } from "@/utils/constants";
 
 export default function InventoryTable(props) {
-  const { items, getInventoryItems } = props;
+  const { items, getInventoryItems, quantities } = props;
   const [showAddItemModal, setShowAddItemModal] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 5;
@@ -18,26 +19,40 @@ export default function InventoryTable(props) {
   console.log("items", items);
 
   const getImageUrl = (imgFile) => {
-    const bufferData = imgFile.buffer;
+    if (imgFile) {
+      const bufferData = imgFile.buffer;
 
-    const byteCharacters = atob(bufferData);
+      const byteCharacters = atob(bufferData);
 
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
+
+      const imageUrl = URL.createObjectURL(imageBlob);
+      return imageUrl;
     }
-    const byteArray = new Uint8Array(byteNumbers);
-
-    const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
-
-    const imageUrl = URL.createObjectURL(imageBlob);
-    return imageUrl;
+    return null;
   };
 
-  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const totalPages = Math.ceil(items ? items.length : 1 / itemsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   console.log(items);
+
+  const getQuantity = (groupId) => {
+    if (groupId) {
+      try {
+        return quantities[groupId] || 0;
+      } catch (err) {
+        return 0;
+      }
+    }
+    return 0;
+  };
 
   return (
     <div className="overflow-x-auto h-[70vh] overflow-y-auto">
@@ -58,8 +73,9 @@ export default function InventoryTable(props) {
             No items available
           </p>
           <p className="text-gray-400 text-center max-w-md">
-            Your inventory is empty. Click the "Add Item" button to start adding
-            items to your inventory.
+            {
+              'Your inventory is empty. Click the "Add Item" button to start adding items to your inventory.'
+            }
           </p>
           <button
             onClick={() => setShowAddItemModal(true)}
@@ -111,7 +127,7 @@ export default function InventoryTable(props) {
                   {item.type}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.quantity}
+                  {getQuantity(item?.id)}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
                   <button>

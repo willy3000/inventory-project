@@ -7,16 +7,23 @@ import UpdateStockModal from "./update-stock-modal";
 import EmployeeSelectModal from "../employees/employee-select-modal";
 import axios from "axios";
 import { setEmployees } from "@/store/slices/employeesSlice";
+import { BASE_URL } from "@/utils/constants";
 
 export default function ItemGroupTable(props) {
-  const { items, getGroupItems, itemGroup, user } = props;
+  const {
+    items,
+    getGroupItems,
+    itemGroup,
+    user,
+    pageDetails,
+    totalItems,
+    setPageDetails,
+  } = props;
   const [showAddItemModal, setShowAddItemModal] = React.useState(false);
   const [showEmployeeSelectModal, setEmployeeSelectModal] =
     React.useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [currentPage, setCurrentPage] = React.useState(1);
   const employees = useSelector((state) => state.employees.employees);
-  const itemsPerPage = 5;
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -24,8 +31,10 @@ export default function ItemGroupTable(props) {
     router.push(`${router.asPath}/${id}`);
   };
 
+  console.log("total items here are,  ", totalItems);
+
   const getEmployees = async () => {
-    const url = "http://localhost:5000/api/employees/getEmployees";
+    const url = `${BASE_URL}/api/employees/getEmployees`;
     console.log("fetching employees");
     try {
       const res = await axios.get(`${url}/${user?.userId}`);
@@ -57,8 +66,9 @@ export default function ItemGroupTable(props) {
     }
   };
 
-  const totalPages = Math.ceil(items.length / itemsPerPage);
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const totalPages = Math.ceil(totalItems / pageDetails.limit);
+  const paginate = (pageNumber) =>
+    setPageDetails({ ...pageDetails, page: pageNumber });
 
   console.log(items);
 
@@ -93,6 +103,8 @@ export default function ItemGroupTable(props) {
     getEmployees();
   }, []);
 
+  console.log("new page details ", pageDetails);
+
   return (
     <div className="overflow-x-auto h-[70vh] overflow-y-auto">
       <div className="flex justify-between mb-4 items-center">
@@ -121,8 +133,7 @@ export default function ItemGroupTable(props) {
             No items available
           </p>
           <p className="text-gray-400 text-center max-w-md">
-            Your inventory is empty. Click the "Add Item" button to start adding
-            items to your inventory.
+            {'Your inventory is empty. Click the "Add Item" button to start adding items to your inventory.'}
           </p>
           <button
             onClick={() => setShowAddItemModal(true)}
@@ -218,8 +229,8 @@ export default function ItemGroupTable(props) {
       <div className="mt-4 flex justify-end">
         <nav className="inline-flex rounded-md shadow">
           <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => paginate(pageDetails.page - 1)}
+            disabled={pageDetails.page === 1}
             className="px-3 py-2 rounded-l-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-gray-700 disabled:opacity-50 flex items-center"
           >
             <i className="fas fa-chevron-left mr-1"></i>
@@ -230,7 +241,7 @@ export default function ItemGroupTable(props) {
               key={number + 1}
               onClick={() => paginate(number + 1)}
               className={`px-3 py-2 border border-gray-700 bg-gray-800 text-sm font-medium ${
-                currentPage === number + 1
+                pageDetails.page === number + 1
                   ? "text-indigo-500 bg-gray-700"
                   : "text-gray-400 hover:bg-gray-700"
               }`}
@@ -239,8 +250,8 @@ export default function ItemGroupTable(props) {
             </button>
           ))}
           <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => paginate(pageDetails.page + 1)}
+            disabled={pageDetails.page === totalPages}
             className="px-3 py-2 rounded-r-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-gray-700 disabled:opacity-50 flex items-center"
           >
             Next

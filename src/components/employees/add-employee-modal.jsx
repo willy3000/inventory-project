@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { BASE_URL } from "@/utils/constants";
+
 
 export default function AddEmployeeModal(props) {
   const { setShowAddItemModal, getEmployees } = props;
@@ -27,7 +29,7 @@ export default function AddEmployeeModal(props) {
     });
 
     try {
-      const url = "http://localhost:5000/api/employees/addEmployee";
+      const url = `${BASE_URL}/api/employees/addEmployee`;
       const res = await axios.post(`${url}/${user?.userId}`, fData, {
         headers: {
           "Content-Type": "multipart/form-data",

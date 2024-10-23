@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { BASE_URL } from "@/utils/constants";
+
 
 export default function AddItemModal(props) {
   const { setShowAddItemModal, getInventoryItems } = props;
@@ -26,7 +28,7 @@ export default function AddItemModal(props) {
     });
 
     try {
-      const url = "http://localhost:5000/api/inventory/addItemGroup";
+      const url = `${BASE_URL}/api/inventory/addItemGroup`;
       const res = await axios.post(`${url}/${user?.userId}`, fData, {
         headers: {
           "Content-Type": "multipart/form-data",

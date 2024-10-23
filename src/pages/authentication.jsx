@@ -3,6 +3,7 @@ import React from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import AuthGuardLogin from "@/components/auth/auth-guard-login";
+import { BASE_URL } from "@/utils/constants";
 
 function MainComponent() {
   const [formData, setFormData] = React.useState({
@@ -80,7 +81,7 @@ function MainComponent() {
       await setTimeout(async () => {
         if (!isLogin) {
           try {
-            const url = "http://localhost:5000/api/auth/signUp";
+            const url = `${BASE_URL}/api/auth/signUp`;
             const res = await axios.post(url, {
               username: formData.username,
               email: formData.email,
@@ -97,7 +98,7 @@ function MainComponent() {
           setIsLoading(false);
         } else {
           try {
-            const url = "http://localhost:5000/api/auth/logIn";
+            const url = `${BASE_URL}/api/auth/logIn`;
             const res = await axios.post(url, {
               email: formData.email,
               password: formData.password,

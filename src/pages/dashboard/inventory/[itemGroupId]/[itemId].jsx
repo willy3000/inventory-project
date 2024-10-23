@@ -7,6 +7,10 @@ import LoadingIndicator from "@/components/hocs/LoadingIndicator";
 import axios from "axios";
 import { setGroupItems } from "@/store/slices/groupItemsSlice";
 import { setEmployees } from "@/store/slices/employeesSlice";
+import { BASE_URL } from "@/utils/constants";
+import { formatDate } from "@/utils/constants";
+import ConfirmModal from "@/components/hocs/confrmation-dialogue";
+import { toast } from "react-toastify";
 
 export default function ItemDetails({ item, onClose }) {
   const router = useRouter();
@@ -19,6 +23,8 @@ export default function ItemDetails({ item, onClose }) {
   const [loading, setLoading] = useState(true);
   const [itemDetails, setItemDetails] = useState(null);
   const [showStatusList, setShowStatusList] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [previousStatus, setPreviousStatus] = useState(null);
   const [formData, setFormData] = React.useState({
     name: "",
     category: "",
@@ -29,7 +35,7 @@ export default function ItemDetails({ item, onClose }) {
   });
 
   const getEmployees = async () => {
-    const url = "http://localhost:5000/api/employees/getEmployees";
+    const url = `${BASE_URL}/api/employees/getEmployees`;
     console.log("fetching employees");
     try {
       const res = await axios.get(`${url}/${user?.userId}`);
@@ -40,26 +46,20 @@ export default function ItemDetails({ item, onClose }) {
     }
   };
 
-  const assignmentHistory = [
-    {
-      id: 1,
-      assignedTo: "John Doe",
-      assignedDate: "2023-01-15",
-      returnDate: "2023-03-15",
-    },
-    {
-      id: 2,
-      assignedTo: "Jane Smith",
-      assignedDate: "2023-03-16",
-      returnDate: "2023-05-16",
-    },
-    {
-      id: 3,
-      assignedTo: "Mike Johnson",
-      assignedDate: "2023-05-17",
-      returnDate: null,
-    },
-  ];
+  const getAssignmentHistory = async () => {
+    const url = `${BASE_URL}/api/inventory/getItemAssignmentHistory`;
+    console.log("fetching employees");
+    try {
+      const res = await axios.get(
+        `${url}/${user?.userId}/${itemDetails?.groupId}/${itemDetails?.id}`
+      );
+      setAssignmentHistory(res.data.result);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const [assignmentHistory, setAssignmentHistory] = useState([]);
 
   const getImageUrl = (imgFile) => {
     if (imgFile) {
@@ -81,7 +81,7 @@ export default function ItemDetails({ item, onClose }) {
   };
 
   const getItemById = async () => {
-    const url = "http://localhost:5000/api/inventory/getItemById";
+    const url = `${BASE_URL}/api/inventory/getItemById`;
     console.log("fetching group id");
     try {
       const res = await axios.get(
@@ -111,6 +111,10 @@ export default function ItemDetails({ item, onClose }) {
     getEmployees();
   }, []);
 
+  useEffect(() => {
+    getAssignmentHistory();
+  }, [itemDetails]);
+
   const getAssignedEmployee = (employeeId) => {
     const employee = employees.find((employee) => employee.id === employeeId);
 
@@ -128,14 +132,54 @@ export default function ItemDetails({ item, onClose }) {
         <span className="text-s truncate max-w-[100px]">
           {employee?.employeeName}
         </span>
-        <i className="fas fa-times px-2 text-gray-400 hover:cursor-pointer"></i>
+        <i
+          className="fas fa-times px-2 text-gray-400 hover:cursor-pointer"
+          onClick={handleUnassignItem}
+        ></i>
       </div>
     );
   };
 
+  const getAssignmentHistoryEmployee = (employeeId) => {
+    const employee = employees.find((employee) => employee.id === employeeId);
+
+    if (!employee) {
+      return null;
+    }
+    return employee;
+  };
+
   const handleStatusChange = (status) => {
+    setPreviousStatus(formData.status);
     setFormData({ ...formData, status: status });
     setShowStatusList(false);
+    setShowConfirmationModal(true);
+  };
+
+  const updateStatus = async () => {
+    try {
+      const url = `${BASE_URL}/api/inventory/updateItemStatus`;
+      const res = await axios.post(
+        `${url}/${user?.userId}/${itemGroupId}/${itemId}`,
+        { status: formData.status },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.data.success) {
+        toast.success("Status updates");
+        setShowConfirmationModal(false);
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleCanceUpdateStatus = () => {
+    setFormData({ ...formData, status: previousStatus });
+    setShowConfirmationModal(false);
   };
 
   const getStatusColor = () => {
@@ -148,6 +192,18 @@ export default function ItemDetails({ item, onClose }) {
         return "bg-red-800";
       default:
         return "bg-gray-600";
+    }
+  };
+
+  const handleUnassignItem = async () => {
+    const url = `${BASE_URL}/api/inventory/unassignItem`;
+    try {
+      const res = await axios.post(
+        `${url}/${user?.userId}/${itemGroupId}/${itemId}/${itemDetails.assignmentId}`
+      );
+      getItemById();
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -312,31 +368,61 @@ export default function ItemDetails({ item, onClose }) {
         <h4 className="text-xl font-semibold text-gray-200 mb-4">
           Assignment History
         </h4>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="bg-gray-700">
-              <th className="p-3 text-gray-200 font-semibold rounded-tl-lg">
-                Assigned To
-              </th>
-              <th className="p-3 text-gray-200 font-semibold">Assigned Date</th>
-              <th className="p-3 text-gray-200 font-semibold rounded-tr-lg">
-                Return Date
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {assignmentHistory.map((assignment) => (
-              <tr key={assignment.id} className="border-b border-gray-700">
-                <td className="p-3 text-gray-300">{assignment.assignedTo}</td>
-                <td className="p-3 text-gray-300">{assignment.assignedDate}</td>
-                <td className="p-3 text-gray-300">
-                  {assignment.returnDate || "Not returned"}
-                </td>
+        <div className="overflow-y-scroll max-h-60">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="p-3 text-gray-200 font-semibold rounded-tl-lg">
+                  Assigned To
+                </th>
+                <th className="p-3 text-gray-200 font-semibold rounded-tr-lg">
+                  Department
+                </th>
+                <th className="p-3 text-gray-200 font-semibold">
+                  Assigned Date
+                </th>
+                <th className="p-3 text-gray-200 font-semibold rounded-tr-lg">
+                  Return Date
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {assignmentHistory.map((assignment) => (
+                <tr key={assignment.id} className="border-b border-gray-700">
+                  <td className="p-3 text-gray-300">
+                    {
+                      getAssignmentHistoryEmployee(assignment?.employeeId)
+                        ?.employeeName
+                    }
+                  </td>
+                  <td className="p-3 text-gray-300">
+                    {
+                      getAssignmentHistoryEmployee(assignment?.employeeId)
+                        ?.department
+                    }
+                  </td>
+                  <td className="p-3 text-gray-300">
+                    {formatDate(new Date(assignment.assignedOn))}
+                  </td>
+                  <td className="p-3 text-gray-300">
+                    {assignment.returnedOn
+                      ? formatDate(new Date(assignment.returnedOn))
+                      : "Pending Return "}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+      {showConfirmationModal && (
+        <ConfirmModal
+          {...{
+            handleConfirm: updateStatus,
+            onCancel: handleCanceUpdateStatus,
+          }}
+        />
+      )}
     </>
   );
 }

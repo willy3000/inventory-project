@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "./dashboard";
 import { useRouter } from "next/router";
 
-export default function Employees() {
+export default function NotFound() {
   const router = useRouter();
 
   return (
@@ -31,6 +31,6 @@ export default function Employees() {
   );
 }
 
-Employees.getLayout = function getLayout(page) {
+NotFound.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };

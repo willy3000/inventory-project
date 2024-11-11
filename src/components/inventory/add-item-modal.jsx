@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "@/utils/constants";
-
+import axiosInstance from "@/components/hocs/axiosInstance";
+import { toast } from "react-toastify";
 
 export default function AddItemModal(props) {
   const { setShowAddItemModal, getInventoryItems } = props;
@@ -29,15 +30,21 @@ export default function AddItemModal(props) {
 
     try {
       const url = `${BASE_URL}/api/inventory/addItemGroup`;
-      const res = await axios.post(`${url}/${user?.userId}`, fData, {
+      const res = await axiosInstance.post(`${url}/${user?.userId}`, fData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       if (res.data.success) {
         getInventoryItems();
+        setFormData({ itemName: "", itemType: "", image: null });
+        setSelectedImage(null);
+        setImageFile(null);
+        toast.success("Item Group Added");
       }
-    } catch (err) {alert(err.message)}
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -66,9 +73,9 @@ export default function AddItemModal(props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-[400px] max-w-full">
-        <h3 className="text-2xl font-bold text-gray-200 mb-6 flex items-center">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-800/90 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
+      <h3 className="text-2xl font-bold text-gray-200 mb-6 flex items-center">
           <i className="fas fa-plus-circle text-indigo-500 mr-3"></i>
           Add New Item
         </h3>
@@ -86,14 +93,19 @@ export default function AddItemModal(props) {
           </div>
           <div className="relative">
             <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input
-              type="text"
-              placeholder="Item Type"
-              className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            <select
+              className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
               name="itemType"
               value={formData.itemType}
               onChange={handleInputChange}
-            />
+            >
+              <option value="">Select Category</option>
+              <option value="software">Software</option>
+              <option value="hardware">Hardware</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <i className="fas fa-chevron-down"></i>
+            </div>
           </div>
           {/* <div className="relative">
             <i className="fas fa-hashtag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>

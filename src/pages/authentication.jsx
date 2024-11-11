@@ -4,6 +4,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import AuthGuardLogin from "@/components/auth/auth-guard-login";
 import { BASE_URL } from "@/utils/constants";
+import { encryptToken } from "@/utils/constants";
 
 function MainComponent() {
   const [formData, setFormData] = React.useState({
@@ -11,9 +12,12 @@ function MainComponent() {
     email: "",
     password: "",
     confirmPassword: "",
+    userCode: "",
+    businessName: "",
   });
+  const [loginType, setLoginType] = React.useState("user");
   const [formErrors, setFormErrors] = React.useState({});
-  const [isLogin, setIsLogin] = React.useState(false);
+  const [isLogin, setIsLogin] = React.useState(true);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -38,6 +42,25 @@ function MainComponent() {
           errors.username = "Username must be at least 3 characters long";
         } else {
           delete errors.username;
+        }
+        break;
+      case "businessName":
+        if (!value) {
+          errors.businessName = "Business Name is required";
+        } else if (value.length < 3) {
+          errors.businessName =
+            "Business Name must be at least 3 characters long";
+        } else {
+          delete errors.businessName;
+        }
+        break;
+      case "userCode":
+        if (!value) {
+          errors.userCode = "User Code is required";
+        } else if (value.length < 3) {
+          errors.userCode = "User Code must be at least 3 characters long";
+        } else {
+          delete errors.userCode;
         }
         break;
       case "email":
@@ -74,7 +97,6 @@ function MainComponent() {
   };
 
   const handleSubmit = async (e) => {
-    console.log("handling");
     e.preventDefault();
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
@@ -86,39 +108,42 @@ function MainComponent() {
               username: formData.username,
               email: formData.email,
               password: formData.password,
+              businessName: formData.businessName,
             });
             if (res.data.success) {
               setSignupSuccess(true);
               localStorage.setItem("user", JSON.stringify(res.data.user));
-              localStorage.setItem("token", res.data.token);
+              localStorage.setItem("token", encryptToken(res.data.token));
             }
-          } catch (err) {
-            console.log(err);
-          }
+          } catch (err) {}
           setIsLoading(false);
         } else {
           try {
             const url = `${BASE_URL}/api/auth/logIn`;
-            const res = await axios.post(url, {
-              email: formData.email,
-              password: formData.password,
-            });
+            const res = await axios.post(
+              url,
+              {
+                email: formData.email,
+                userCode: formData.userCode,
+                password: formData.password,
+                loginType: loginType,
+              },
+              { withCredentials: true }
+            );
             if (res.data.success) {
               setLoginSuccess(true);
               localStorage.setItem("user", JSON.stringify(res.data.user));
-              localStorage.setItem("token", res.data.token);
+              localStorage.setItem("token", encryptToken(res.data.token));
               setTimeout(() => {
                 router.push("dashboard");
               }, 1500);
             } else {
               setLoginSuccess(false);
-              console.log("error", res.data.message);
               setLoginError(res.data.message);
             }
           } catch (err) {
             setLoginSuccess(false);
             setLoginError(err);
-            console.log(err);
           }
           setIsLoading(false);
         }
@@ -172,56 +197,141 @@ function MainComponent() {
                   <span className="block sm:inline">{loginError}</span>
                 </div>
               )}
+              {isLogin && (
+                <div className="mt-4 flex justify-center space-x-4">
+                  <button
+                    onClick={() => setLoginType("admin")}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                      loginType === "admin"
+                        ? "bg-indigo-600 shadow-lg"
+                        : "bg-gray-700 hover:bg-gray-600"
+                    }`}
+                    style={{ animation: "slideIn 0.3s ease-out" }}
+                  >
+                    <i className="fas fa-user-shield text-xl"></i>
+                    <span>Admin</span>
+                  </button>
+                  <button
+                    onClick={() => setLoginType("user")}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                      loginType === "user"
+                        ? "bg-indigo-600 shadow-lg"
+                        : "bg-gray-700 hover:bg-gray-600"
+                    }`}
+                    style={{ animation: "slideIn 0.3s ease-out" }}
+                  >
+                    <i className="fas fa-user text-xl"></i>
+                    <span>User</span>
+                  </button>
+                </div>
+              )}
             </div>
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 {!isLogin && (
-                  <div>
-                    <label htmlFor="username" className="sr-only">
-                      Username
-                    </label>
-                    <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      required
-                      className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
-                        formErrors.username
-                          ? "border-red-500"
-                          : "border-gray-700"
-                      } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                      placeholder="Username"
-                      value={formData.username}
-                      onChange={handleChange}
-                    />
-                    {formErrors.username && (
-                      <p className="mt-1 text-sm text-red-500">
-                        {formErrors.username}
-                      </p>
-                    )}
-                  </div>
+                  <>
+                    <div>
+                      <label htmlFor="username" className="sr-only">
+                        Username
+                      </label>
+                      <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        required
+                        className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
+                          formErrors.username
+                            ? "border-red-500"
+                            : "border-gray-700"
+                        } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                        placeholder="Username"
+                        value={formData.username}
+                        onChange={handleChange}
+                      />
+                      {formErrors.username && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.username}
+                        </p>
+                      )}
+                    </div>{" "}
+                    <div>
+                      <label htmlFor="username" className="sr-only">
+                        Business Name
+                      </label>
+                      <input
+                        id="businessName"
+                        name="businessName"
+                        type="text"
+                        required
+                        className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
+                          formErrors.businessName
+                            ? "border-red-500"
+                            : "border-gray-700"
+                        } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                        placeholder="Business Name"
+                        value={formData.businessName}
+                        onChange={handleChange}
+                      />
+                      {formErrors.businessName && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.businessName}
+                        </p>
+                      )}
+                    </div>
+                  </>
                 )}
                 <div>
-                  <label htmlFor="email-address" className="sr-only">
-                    Email address
-                  </label>
-                  <input
-                    id="email-address"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
-                      formErrors.email ? "border-red-500" : "border-gray-700"
-                    } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                    placeholder="Email address"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                  {formErrors.email && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {formErrors.email}
-                    </p>
+                  {loginType === "admin" || !isLogin ? (
+                    <>
+                      <label htmlFor="email-address" className="sr-only">
+                        Email address
+                      </label>
+                      <input
+                        id="email-address"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
+                          formErrors.email
+                            ? "border-red-500"
+                            : "border-gray-700"
+                        } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                        placeholder="Email address"
+                        value={formData.email}
+                        onChange={handleChange}
+                      />
+                      {formErrors.email && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.email}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <label htmlFor="userCode" className="sr-only">
+                        User Code
+                      </label>
+                      <input
+                        id="userCode"
+                        name="userCode"
+                        type="text"
+                        required
+                        className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
+                          formErrors.userCode
+                            ? "border-red-500"
+                            : "border-gray-700"
+                        } placeholder-gray-500 text-white bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                        placeholder="User Code"
+                        value={formData.userCode}
+                        onChange={handleChange}
+                      />
+                      {formErrors.userCode && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.userCode}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
                 <div className="relative">

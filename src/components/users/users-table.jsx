@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import AddEmployeeModal from "./add-employee-modal";
-import EmployeeEditGuard from "../auth/employee-edit-guard";
+import AddUserModal from "./add-user-modal";
 import NoItems from "../hocs/no-items";
 import LoadingIndicator from "../hocs/LoadingIndicator";
 
-export default function EmployeesTable(props) {
-  const { employees, getEmployees, loading } = props;
+export default function UsersTable(props) {
+  const { operators, getInventoryOperators, loading } = props;
   const router = useRouter();
-  const [showAddEmployeeModal, setShowAddEmployeeModal] = React.useState(false);
+  const [showAddUserModal, setShowAddUserModal] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 5;
 
@@ -33,7 +32,7 @@ export default function EmployeesTable(props) {
     return null;
   };
 
-  const totalPages = Math.ceil(employees.length / itemsPerPage);
+  const totalPages = Math.ceil(operators.length / itemsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleViewmployeeDetails = (id) => {
@@ -47,27 +46,42 @@ export default function EmployeesTable(props) {
     return "/images/male-employee.jpeg";
   };
 
+  const getUserStatus = (disabled) => {
+    if (disabled) {
+      return (
+        <span className={`text-red-500 flex items-center space-x-2`}>
+          <i className={`fas fa-times-circle`}></i>
+          <span>{"inactive"}</span>
+        </span>
+      );
+    }
+    return (
+      <span className={`text-green-500 flex items-center space-x-2`}>
+        <i className={`fas fa-check-circle`}></i>
+        <span>{"active"}</span>
+      </span>
+    );
+  };
+
   return (
     <div className="overflow-x-auto h-[70vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold text-gray-200">Employees</h3>
-        <EmployeeEditGuard>
-          <button
-            onClick={() => setShowAddEmployeeModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex items-center space-x-2 transition-all duration-300 transform hover:scale-100 mx-5"
-          >
-            <i className="fas fa-plus-circle"></i>
-            <span>Add Employee</span>
-          </button>
-        </EmployeeEditGuard>
+        <h3 className="text-xl font-semibold text-gray-200">Users</h3>
+        <button
+          onClick={() => setShowAddUserModal(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex items-center space-x-2 transition-all duration-300 transform hover:scale-100 mx-5"
+        >
+          <i className="fas fa-plus-circle"></i>
+          <span>Add User</span>
+        </button>
       </div>
-      {employees?.length === 0 && !loading ? (
+      {operators?.length === 0 && !loading ? (
         <NoItems
           {...{
             message:
-              'Your have no employees yet. Click the "Add Employee" button to start adding employees to your business.',
-            openModal: setShowAddEmployeeModal,
-            icon: "fa-users",
+              'Your have no users yet. Click the "Add User" button to start adding users to your business.',
+            openModal: setShowAddUserModal,
+            icon: "fa-tools",
           }}
         />
       ) : loading ? (
@@ -83,10 +97,10 @@ export default function EmployeesTable(props) {
                 Name
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Gender
+                User Code
               </th>
-              <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Department
+              <th className="p-4 text-gray-200 font-semibold text-left bg-gray-700">
+                Status
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
                 Actions
@@ -94,31 +108,31 @@ export default function EmployeesTable(props) {
             </tr>
           </thead>
           <tbody>
-            {employees.map((employee) => (
+            {operators.map((operator) => (
               <tr
-                key={employee.id}
+                key={operator.id}
                 className="transition-colors hover:bg-gray-700"
-                onClick={() => handleViewmployeeDetails(employee?.id)}
+                onClick={() => handleViewmployeeDetails(operator?.id)}
               >
                 <td className="p-4 border-b border-gray-600">
                   <img
                     src={
-                      employee?.image
-                        ? getImageUrl(employee?.image)
-                        : getPlaceholderImage(employee?.gender)
+                      operator?.image
+                        ? getImageUrl(operator?.image)
+                        : "/images/user-placeholder.webp"
                     }
-                    alt={employee.employeeName}
+                    alt={operator?.username}
                     className="w-16 h-16 object-cover rounded-full shadow-md"
                   />
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {employee.employeeName}
+                  {operator?.username}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {employee.gender}
+                  {operator.userCode}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {employee.department}
+                  {getUserStatus(operator.disabled)}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
                   <button>
@@ -130,7 +144,6 @@ export default function EmployeesTable(props) {
           </tbody>
         </table>
       )}
-
       <div className="mt-4 flex justify-end">
         <nav className="inline-flex rounded-md shadow">
           <button
@@ -164,8 +177,8 @@ export default function EmployeesTable(props) {
           </button>
         </nav>
       </div>
-      {showAddEmployeeModal && (
-        <AddEmployeeModal {...{ setShowAddEmployeeModal, getEmployees }} />
+      {showAddUserModal && (
+        <AddUserModal {...{ setShowAddUserModal, getInventoryOperators }} />
       )}
     </div>
   );

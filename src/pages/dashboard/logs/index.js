@@ -8,13 +8,14 @@ import axios from "axios";
 import { setGroupItems } from "@/store/slices/groupItemsSlice";
 import { BASE_URL } from "@/utils/constants";
 import axiosInstance from "@/components/hocs/axiosInstance";
-import NotFound from "@/pages/404";
+import LogsTable from "@/components/logs/logs-table";
+import { setLogs } from "@/store/slices/logsSlice";
 
 export default function ItemGroup() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { itemGroupId } = router.query;
-  const groupItems = useSelector((state) => state.groupItems.groupItems);
+  const logs = useSelector((state) => state.logs.logs);
   const user = useSelector((state) => state.user.user);
   const [itemGroup, setItemGroup] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,51 +25,32 @@ export default function ItemGroup() {
   });
   const [totalItems, setTotalItems] = useState(1);
 
-  const getGroupItems = async () => {
-    const url = `${BASE_URL}/api/inventory/getGroupItems`;
+  const getLogs = async () => {
+    const url = `${BASE_URL}/api/logs/getLogs`;
     const queryString = `page=${pageDetails.page}&limit=${pageDetails.limit}`;
     try {
-      const res = await axiosInstance.get(
-        `${url}/${user?.userId}/${itemGroupId}?${queryString}`
-      );
-      dispatch(setGroupItems(res.data.result));
-      setTotalItems(res.data.totalItems);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
+      dispatch(setLogs(res.data.result));
+      //   setTotalItems(res.data.totalItems);
+      setLoading(false);
     } catch (err) {}
-  };
-  const getItemGroupById = async () => {
-    const url = `${BASE_URL}/api/inventory/getItemGroupById`;
-    try {
-      const res = await axiosInstance.get(
-        `${url}/${user?.userId}/${itemGroupId}`
-      );
-      setItemGroup(res.data.result);
-    } catch (err) {
-      alert(err.message);
-    }
-    getGroupItems();
-    setLoading(false);
   };
 
   useEffect(() => {
-    getItemGroupById();
+    getLogs();
   }, []);
-  useEffect(() => {
-    getGroupItems();
-  }, [pageDetails]);
+
+  console.log("logs", logs);
 
   if (loading) {
     return <LoadingIndicator />;
   }
 
-  if (!groupItems) {
-    return <NotFound />;
-  }
-
   return (
-    <ItemGroupTable
+    <LogsTable
       {...{
-        items: groupItems || [],
-        getGroupItems,
+        items: logs,
+        getLogs,
         itemGroup,
         user,
         pageDetails,

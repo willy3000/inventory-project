@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { setItems } from "@/store/slices/itemsSlice";
 import { setEmployees } from "@/store/slices/employeesSlice";
 import { BASE_URL } from "@/utils/constants";
+import axiosInstance from "@/components/hocs/axiosInstance";
+
 
 export default function Employees() {
   const [loading, setLoading] = useState(true);
@@ -16,10 +18,8 @@ export default function Employees() {
 
   const getEmployees = async () => {
     const url = `${BASE_URL}/api/employees/getEmployees`;
-    console.log("fetching employees");
     try {
-      const res = await axios.get(`${url}/${user?.userId}`);
-      console.log("dipatching", res.data.result);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
       dispatch(setEmployees(res.data.result));
     } catch (err) {
       alert(err.message);
@@ -31,11 +31,8 @@ export default function Employees() {
     getEmployees();
   }, []);
 
-  if (loading) {
-    return <LoadingIndicator />;
-  }
 
-  return <EmployeesTable {...{ employees, getEmployees }} />;
+  return <EmployeesTable {...{ employees, getEmployees, loading }} />;
 }
 
 Employees.getLayout = function getLayout(page) {

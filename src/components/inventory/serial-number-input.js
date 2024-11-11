@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import useScanDetection from "use-scan-detection";
 import axios from "axios";
 import { BASE_URL } from "@/utils/constants";
+import axiosInstance from "../hocs/axiosInstance";
+import { toast } from "react-toastify";
 
 export default function SerialNumberInput(props) {
   const {
@@ -11,8 +13,9 @@ export default function SerialNumberInput(props) {
     itemGroup,
     getGroupItems,
     setSerialNumberModal,
+    setShowAddItemModal
   } = props;
-  const [barCode, setBarcode] = useState(null);
+  const [barCode, setBarcode] = useState("");
 
   useScanDetection({
     onComplete: setBarcode,
@@ -30,7 +33,7 @@ export default function SerialNumberInput(props) {
   const handleUpdateStock = async (frmData) => {
     try {
       const url = `${BASE_URL}/api/inventory/addItem`;
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${url}/${user?.userId}/${itemGroup.id}`,
         frmData,
         {
@@ -41,36 +44,57 @@ export default function SerialNumberInput(props) {
       );
       if (res.data.success) {
         getGroupItems();
-        playBeep()
+        toast.success("item added");
+        playBeep();
+      } else {
+        toast.error(res.data.message);
+        playError();
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
+      playError();
     }
   };
 
   const playBeep = () => {
-    const beepSound = new Audio('/sounds/success-beep.mp3'); // Path to the sound in the public folder
+    const beepSound = new Audio("/sounds/success-beep.mp3"); // Path to the sound in the public folder
     beepSound.play();
+  };
+
+  const playError = () => {
+    const beepSound = new Audio("/sounds/error-beep.mp3"); // Path to the sound in the public folder
+    beepSound.play();
+  };
+
+  const handleDoneScanning = () => {
+    setSerialNumberModal(false);
+    setShowAddItemModal(false);
+  };
+
+  const handleBackToDetails = () => {
+    setSerialNumberModal(false);
   };
 
   useEffect(() => {
     handleSetSerialNumber();
   }, [barCode]);
 
-  console.log("barcode data", formData);
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-[400px] max-w-full">
-        <div className="justify-center flex">
+        <div className="justify-between flex items-baseline">
+          <i
+            className="fas fa-arrow-left-long"
+            onClick={handleBackToDetails}
+          ></i>
           <h3 className="text-2xl font-bold text-gray-200 mb-6 flex items-center min-w-fit">
             Scan barcode
           </h3>
         </div>
         <div className=" flex w-full">
-          <img src="/barcode.png" alt="" />
+          <img src="/images/barcode.png" alt="" />
         </div>
-        <form className="space-y-6">
+        <div className="space-y-6">
           <div className="relative">
             <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input
@@ -79,19 +103,19 @@ export default function SerialNumberInput(props) {
               className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               name="serialNumber"
               value={formData.serialNumber}
-              // onChange={handleSetSerialNumber}
+              readOnly
             />
           </div>
           <div className="flex justify-end">
             <button
-              onClick={() => setSerialNumberModal(false)}
+              onClick={handleDoneScanning}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center"
             >
               <i className="fas fa-check mr-2"></i>
               Done
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

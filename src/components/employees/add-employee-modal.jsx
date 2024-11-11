@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "@/utils/constants";
-
+import axiosInstance from "../hocs/axiosInstance";
+import { toast } from "react-toastify";
 
 export default function AddEmployeeModal(props) {
-  const { setShowAddItemModal, getEmployees } = props;
+  const { setShowAddEmployeeModal, getEmployees } = props;
   const user = useSelector((state) => state.user.user);
 
   const [selectedImage, setSelectedImage] = React.useState(null);
@@ -30,13 +31,22 @@ export default function AddEmployeeModal(props) {
 
     try {
       const url = `${BASE_URL}/api/employees/addEmployee`;
-      const res = await axios.post(`${url}/${user?.userId}`, fData, {
+      const res = await axiosInstance.post(`${url}/${user?.userId}`, fData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       if (res.data.success) {
         getEmployees();
+        toast.success("Employee Added");
+        setFormData({
+          employeeName: "",
+          gender: "",
+          department: "",
+          image: null,
+        });
+        setSelectedImage(null);
+        setImageFile(null);
       }
     } catch (err) {
       alert(err.message);
@@ -65,12 +75,12 @@ export default function AddEmployeeModal(props) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     handleAddEmployee();
-    // setShowAddItemModal(false);
+    // setShowAddEmployeeModal(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-[400px] max-w-full">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-800/90 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
         <h3 className="text-2xl font-bold text-gray-200 mb-6 flex items-center">
           <i className="fas fa-plus-circle text-indigo-500 mr-3"></i>
           Add New Employee
@@ -89,6 +99,7 @@ export default function AddEmployeeModal(props) {
             <i className="fas fa-box-open absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             <input
               type="text"
+              required
               placeholder="Employee Name"
               className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               name="employeeName"
@@ -97,38 +108,40 @@ export default function AddEmployeeModal(props) {
             />
           </div>
           <div className="relative">
-              <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              <select
-                className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Item Type</option>
-                <option value="MALE">MALE</option>
-                <option value="FEMALE">FEMALE</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                <i className="fas fa-chevron-down"></i>
-              </div>
+            <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <select
+              className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+              name="gender"
+              value={formData.gender}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select Item Type</option>
+              <option value="MALE">MALE</option>
+              <option value="FEMALE">FEMALE</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <i className="fas fa-chevron-down"></i>
             </div>
-            <div className="relative">
-              <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              <select
-                className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                name="department"
-                value={formData.department}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Department</option>
-                <option value="IT">IT</option>
-                <option value="Sales">Sales</option>
-                <option value="Accounts">Accounts</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                <i className="fas fa-chevron-down"></i>
-              </div>
+          </div>
+          <div className="relative">
+            <i className="fas fa-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <select
+              className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+              name="department"
+              value={formData.department}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select Department</option>
+              <option value="IT">IT</option>
+              <option value="Sales">Sales</option>
+              <option value="Accounts">Accounts</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <i className="fas fa-chevron-down"></i>
             </div>
+          </div>
 
           <div className="relative">
             <i className="fas fa-image absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -143,7 +156,7 @@ export default function AddEmployeeModal(props) {
           <div className="flex justify-end space-x-3">
             <button
               type="button"
-              onClick={() => setShowAddItemModal(false)}
+              onClick={() => setShowAddEmployeeModal(false)}
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center"
             >
               <i className="fas fa-times mr-2"></i>

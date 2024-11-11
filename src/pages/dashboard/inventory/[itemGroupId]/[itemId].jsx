@@ -11,6 +11,10 @@ import { BASE_URL } from "@/utils/constants";
 import { formatDate } from "@/utils/constants";
 import ConfirmModal from "@/components/hocs/confrmation-dialogue";
 import { toast } from "react-toastify";
+import axiosInstance from "@/components/hocs/axiosInstance";
+import ItemAssignGuard from "@/components/auth/item-assign-guard";
+import InventoryEditGuard from "@/components/auth/inventory-edit-guard";
+import NotFound from "@/pages/404";
 
 export default function ItemDetails({ item, onClose }) {
   const router = useRouter();
@@ -28,18 +32,16 @@ export default function ItemDetails({ item, onClose }) {
   const [formData, setFormData] = React.useState({
     name: "",
     category: "",
-    purchaseDate: null,
-    warrantyExpiry: null,
+    purchaseDate: "",
+    warrantyExpiry: "",
     assignedTo: null,
-    status: "active",
+    status: "",
   });
 
   const getEmployees = async () => {
     const url = `${BASE_URL}/api/employees/getEmployees`;
-    console.log("fetching employees");
     try {
-      const res = await axios.get(`${url}/${user?.userId}`);
-      console.log("dipatching", res.data.result);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
       dispatch(setEmployees(res.data.result));
     } catch (err) {
       alert(err.message);
@@ -48,9 +50,8 @@ export default function ItemDetails({ item, onClose }) {
 
   const getAssignmentHistory = async () => {
     const url = `${BASE_URL}/api/inventory/getItemAssignmentHistory`;
-    console.log("fetching employees");
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${url}/${user?.userId}/${itemDetails?.groupId}/${itemDetails?.id}`
       );
       setAssignmentHistory(res.data.result);
@@ -80,14 +81,19 @@ export default function ItemDetails({ item, onClose }) {
     }
   };
 
+  const getPlaceholderImage = (gender) => {
+    if (gender === "FEMALE") {
+      return "/images/female-employee.png";
+    }
+    return "/images/male-employee.jpeg";
+  };
+
   const getItemById = async () => {
     const url = `${BASE_URL}/api/inventory/getItemById`;
-    console.log("fetching group id");
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${url}/${user?.userId}/${itemGroupId}/${itemId}`
       );
-      console.log("dipatching item by id", res.data.result);
       setItemDetails(res.data.result);
       setFormData({
         name: res.data.result.name,
@@ -125,17 +131,23 @@ export default function ItemDetails({ item, onClose }) {
     return (
       <div className="flex items-center bg-gray-600 rounded-full p-2 max-w-fit">
         <img
-          src={getImageUrl(employee?.image)}
+          src={
+            employee?.image
+              ? getImageUrl(employee?.image)
+              : getPlaceholderImage(employee?.gender)
+          }
           alt={`${employee?.name}`}
           className="w-6 h-6 rounded-full mr-2"
         />
         <span className="text-s truncate max-w-[100px]">
           {employee?.employeeName}
         </span>
-        <i
-          className="fas fa-times px-2 text-gray-400 hover:cursor-pointer"
-          onClick={handleUnassignItem}
-        ></i>
+        <ItemAssignGuard>
+          <i
+            className="fas fa-times px-2 text-gray-400 hover:cursor-pointer"
+            onClick={handleUnassignItem}
+          ></i>
+        </ItemAssignGuard>
       </div>
     );
   };
@@ -159,7 +171,7 @@ export default function ItemDetails({ item, onClose }) {
   const updateStatus = async () => {
     try {
       const url = `${BASE_URL}/api/inventory/updateItemStatus`;
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${url}/${user?.userId}/${itemGroupId}/${itemId}`,
         { status: formData.status },
         {
@@ -169,7 +181,7 @@ export default function ItemDetails({ item, onClose }) {
         }
       );
       if (res.data.success) {
-        toast.success("Status updates");
+        toast.success("Status updated");
         setShowConfirmationModal(false);
       }
     } catch (err) {
@@ -198,7 +210,7 @@ export default function ItemDetails({ item, onClose }) {
   const handleUnassignItem = async () => {
     const url = `${BASE_URL}/api/inventory/unassignItem`;
     try {
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${url}/${user?.userId}/${itemGroupId}/${itemId}/${itemDetails.assignmentId}`
       );
       getItemById();
@@ -206,6 +218,10 @@ export default function ItemDetails({ item, onClose }) {
       alert(err.message);
     }
   };
+
+  if (!itemDetails) {
+    return NotFound;
+  }
 
   return (
     <>
@@ -244,7 +260,7 @@ export default function ItemDetails({ item, onClose }) {
                 type="date"
                 className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 name="warrantyExpiry"
-                value={formData.purchaseDate}
+                value={formData?.purchaseDate}
                 onChange={handleInputChange}
               />
               <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -257,7 +273,7 @@ export default function ItemDetails({ item, onClose }) {
                 type="date"
                 className="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 name="warrantyExpiry"
-                value={formData.warrantyExpiry}
+                value={formData?.warrantyExpiry}
                 onChange={handleInputChange}
               />
               <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -289,12 +305,14 @@ export default function ItemDetails({ item, onClose }) {
             {itemDetails?.assignedTo ? (
               getAssignedEmployee(itemDetails.assignedTo)
             ) : (
-              <button
-                onClick={(e) => {}}
-                className="px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-slate-500 disabled:opacity-50 flex items-center"
-              >
-                Assign
-              </button>
+              <ItemAssignGuard>
+                <button
+                  onClick={(e) => {}}
+                  className="px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-slate-500 disabled:opacity-50 flex items-center"
+                >
+                  Assign
+                </button>
+              </ItemAssignGuard>
             )}
           </div>
 
@@ -313,11 +331,13 @@ export default function ItemDetails({ item, onClose }) {
                   <span className="text-s truncate max-w-fit">
                     {formData?.status}
                   </span>
-                  <i
-                    className={`fas fa-chevron-${
-                      showStatusList ? "up" : "down"
-                    }`}
-                  ></i>
+                  <InventoryEditGuard>
+                    <i
+                      className={`fas fa-chevron-${
+                        showStatusList ? "up" : "down"
+                      }`}
+                    ></i>
+                  </InventoryEditGuard>
                 </div>
               </button>
               {showStatusList && (

@@ -2,17 +2,14 @@ import React, { useState, useEffect } from "react";
 import LoadingIndicator from "../hocs/LoadingIndicator";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import AddItemModal from "./add-item-modal";
-import UpdateStockModal from "./update-stock-modal";
 import EmployeeSelectModal from "../employees/employee-select-modal";
 import axios from "axios";
 import { setEmployees } from "@/store/slices/employeesSlice";
 import { BASE_URL } from "@/utils/constants";
 import axiosInstance from "../hocs/axiosInstance";
-import InventoryEditGuard from "../auth/inventory-edit-guard";
-import ItemAssignGuard from "../auth/item-assign-guard";
+import { toast } from "react-toastify";
 
-export default function ItemGroupTable(props) {
+export default function LogsTable(props) {
   const {
     items,
     getGroupItems,
@@ -29,6 +26,7 @@ export default function ItemGroupTable(props) {
   const employees = useSelector((state) => state.employees.employees);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
 
   const handleViewItemDetails = (id) => {
     router.push(`${router.asPath}/${id}`);
@@ -80,6 +78,31 @@ export default function ItemGroupTable(props) {
     setEmployeeSelectModal(true);
   };
 
+  const downloadExcel = async () => {
+    const url = `${BASE_URL}/api/logs/exportLogs`;
+    try {
+      const response = await axiosInstance.get(`${url}/${user?.userId}`, {
+        responseType: "blob", // Important to handle binary data
+        headers: {
+          "Content-Type":
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      // Create a URL for the blob and download it
+      const bloburl = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = bloburl;
+      a.download = "inventory.xlsx"; // Set the desired file name here
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      bloburl;
+    } catch (err) {
+      toast.error("Error downloading file:", err.message);
+    }
+  };
+
   const getAssignedEmployee = (employeeId) => {
     const employee = employees.find((employee) => employee.id === employeeId);
 
@@ -113,28 +136,48 @@ export default function ItemGroupTable(props) {
     <div className="overflow-x-auto h-[70vh] overflow-y-auto">
       <div className="flex justify-between mb-4 items-center">
         <div className="flex items-center gap-2">
-          <img
-            src={
-              itemGroup?.image
-                ? getImageUrl(itemGroup?.image)
-                : "/images/placeholder-image.jpg"
-            }
-            alt={itemGroup?.name}
-            className="w-25 h-20 object-cover rounded-lg shadow-md"
-          />
-          <h3 className="text-xl font-semibold text-gray-200">
-            {itemGroup?.name}
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-200">{"Logs"}</h3>
         </div>
-        <InventoryEditGuard>
+
+        <div className="relative">
           <button
-            onClick={() => setShowAddItemModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex items-center space-x-2 transition-all duration-300 transform hover:scale-100 mx-5"
+            onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center space-x-2 shadow-lg shadow-indigo-500/30"
           >
-            <i className="fas fa-arrow-up m-2"></i>
-            Update Stock
+            <i className="fas fa-download"></i>
+            <span>Download Logs</span>
+            <i
+              className={`fas fa-chevron-${
+                showDownloadMenu ? "up" : "down"
+              } ml-2 transition-transform duration-200`}
+            ></i>
           </button>
-        </InventoryEditGuard>
+          {showDownloadMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl py-1 z-10 border border-gray-700 animate-fadeIn">
+              <button
+                onClick={() => {
+                  downloadExcel();
+                  //   downloadLogs("xlsx");
+                  setShowDownloadMenu(false);
+                }}
+                className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors flex items-center space-x-2"
+              >
+                <i className="fas fa-file-excel"></i>
+                <span>CSV (.csv)</span>
+              </button>
+              <button
+                onClick={() => {
+                  downloadLogs("pdf");
+                  setShowDownloadMenu(false);
+                }}
+                className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors flex items-center space-x-2"
+              >
+                <i className="fas fa-file-pdf"></i>
+                <span>PDF (.pdf)</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-lg w-[100%]">
@@ -147,43 +190,35 @@ export default function ItemGroupTable(props) {
               'Your inventory is empty. Click the "Add Item" button to start adding items to your inventory.'
             }
           </p>
-          <InventoryEditGuard>
-            <button
-              onClick={() => setShowAddItemModal(true)}
-              className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
-            >
-              <i className="fas fa-plus-circle"></i>
-              <span>Add Your First Item</span>
-            </button>
-          </InventoryEditGuard>
+          <button
+            onClick={() => setShowAddItemModal(true)}
+            className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+          >
+            <i className="fas fa-plus-circle"></i>
+            <span>Add Your First Item</span>
+          </button>
         </div>
       ) : (
         <table className="w-full text-left border-separate border-spacing-0">
           <thead>
             <tr>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Serial No.
+                User Code
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Item Name
+                Username
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Category
+                Operation
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Purchase Date
+                Role
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                Warranty Expiry
+                Status
               </th>
               <th className="p-4 text-gray-200 font-semibold text-center bg-gray-700">
-                status
-              </th>
-              <th className="p-4 text-gray-200 font-semibold bg-gray-700">
-                Assigned To
-              </th>
-              <th className="p-4 text-gray-200 font-semibold bg-gray-700 text-center">
-                Actions
+                Time Stamp
               </th>
             </tr>
           </thead>
@@ -195,47 +230,23 @@ export default function ItemGroupTable(props) {
                 onClick={() => handleViewItemDetails(item.id)}
               >
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.serialNumber}
+                  {item?.userCode}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.name}
+                  {item?.username}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.category}
+                  {item?.operation}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.purchaseDate}
-                </td>
-                <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item.warrantyExpiry}
+                  {item.role}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
                   {item.status}
                 </td>
                 <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  {item?.assignedTo ? (
-                    getAssignedEmployee(item?.assignedTo)
-                  ) : (
-                    <ItemAssignGuard>
-                      <button
-                        onClick={(e) => handleEmployeeSelect(e, item)}
-                        className="px-3 py-2 rounded-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-400 hover:bg-slate-500 disabled:opacity-50 flex items-center"
-                      >
-                        Assign
-                      </button>
-                    </ItemAssignGuard>
-                  )}
+                  {`${new Date(item?.timestamp)}`}
                 </td>
-                <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  <button>
-                    <i className="fa fa-arrow-right"></i>
-                  </button>
-                </td>
-                {/* <td className="p-4 text-gray-300 border-b border-gray-600 text-center">
-                  <button>
-                    <i className="fa fa-arrow-right"></i>
-                  </button>
-                </td> */}
               </tr>
             ))}
           </tbody>
@@ -275,13 +286,6 @@ export default function ItemGroupTable(props) {
           </button>
         </nav>
       </div>
-      {showAddItemModal && (
-        <InventoryEditGuard>
-          <UpdateStockModal
-            {...{ setShowAddItemModal, getGroupItems, itemGroup }}
-          />
-        </InventoryEditGuard>
-      )}
       {showEmployeeSelectModal && (
         <EmployeeSelectModal
           {...{

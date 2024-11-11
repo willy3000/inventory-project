@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import LoadingIndicator from "@/components/hocs/LoadingIndicator";
 import axios from "axios";
 import { BASE_URL } from "@/utils/constants";
+import axiosInstance from "@/components/hocs/axiosInstance";
 
 export default function Stats() {
   const user = useSelector((state) => state.user.user);
@@ -15,7 +16,7 @@ export default function Stats() {
   const getItemStatusStats = async () => {
     const url = `${BASE_URL}/api/stats/getItemStatusStats`;
     try {
-      const res = await axios.get(`${url}/${user?.userId}`);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
       setItemStatusStats(res.data.result);
     } catch (err) {}
     setLoading(false);
@@ -23,9 +24,8 @@ export default function Stats() {
   const getStockLevelStats = async () => {
     const url = `${BASE_URL}/api/stats/getStockLevelStats`;
     try {
-      const res = await axios.get(`${url}/${user?.userId}`);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
       setStockLevelStats(res.data.result);
-      console.log("stats are , ", res.data.result);
     } catch (err) {}
     setLoading(false);
   };
@@ -86,7 +86,7 @@ export default function Stats() {
           <div className="text-3xl font-bold text-white mb-2">
             {itemStatusStats?.active || 0}
           </div>
-          <div className="text-indigo-200 text-sm">Total inventory items</div>
+          <div className="text-indigo-200 text-sm">Up & Running</div>
         </div>
         <div
           className={`bg-gradient-to-br from-red-600 to-red-800 p-6 rounded-xl shadow-lg transform transition-all duration-500 hover:scale-105 ${
@@ -137,7 +137,7 @@ export default function Stats() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-2">
-            {stockLevelStats.lowStock}
+            {stockLevelStats?.lowStock || 0}
           </div>
           <div className="text-orange-200 text-sm">Items need restocking</div>
         </div>
@@ -153,7 +153,7 @@ export default function Stats() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-2">
-            {stockLevelStats.moderateStock}
+            {stockLevelStats?.moderateStock || 0}
           </div>
           <div className="text-blue-200 text-sm">Items at moderate level</div>
         </div>
@@ -169,7 +169,7 @@ export default function Stats() {
             </div>
           </div>
           <div className="text-3xl font-bold text-white mb-2">
-            {stockLevelStats.optimalStock}
+            {stockLevelStats?.optimalStock || 0}
           </div>
           <div className="text-green-200 text-sm">Items at optimal level</div>
         </div>

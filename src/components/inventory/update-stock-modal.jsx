@@ -14,9 +14,9 @@ export default function UpdateStockModal(props) {
   const [formData, setFormData] = React.useState({
     name: "",
     serialNumber: "",
-    category: null,
-    purchaseDate: null,
-    warrantyExpiry: null,
+    category: "",
+    purchaseDate: "",
+    warrantyExpiry: "",
     status: "active",
   });
   const [imageFile, setImageFile] = useState(null);
@@ -49,7 +49,7 @@ export default function UpdateStockModal(props) {
   };
 
   if (serialNumberModal) {
-    return <SerialNumberInput {...{ formData, setFormData, user, itemGroup, getGroupItems, setSerialNumberModal }} />;
+    return <SerialNumberInput {...{ formData, setFormData, user, itemGroup, getGroupItems, setSerialNumberModal, setShowAddItemModal }} />;
   }
 
   return (

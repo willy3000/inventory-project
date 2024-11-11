@@ -4,6 +4,7 @@ import { setEmployees } from "@/store/slices/employeesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingIndicator from "../hocs/LoadingIndicator";
 import { BASE_URL } from "@/utils/constants";
+import axiosInstance from "../hocs/axiosInstance";
 
 export default function EmployeeSelectModal(props) {
   const { setEmployeeSelectModal, user, item, getGroupItems } = props;
@@ -14,10 +15,8 @@ export default function EmployeeSelectModal(props) {
 
   const getEmployees = async () => {
     const url = `${BASE_URL}/api/employees/getEmployees`;
-    console.log("fetching employees");
     try {
-      const res = await axios.get(`${url}/${user?.userId}`);
-      console.log("dipatching", res.data.result);
+      const res = await axiosInstance.get(`${url}/${user?.userId}`);
       dispatch(setEmployees(res.data.result));
     } catch (err) {
       alert(err.message);
@@ -29,7 +28,7 @@ export default function EmployeeSelectModal(props) {
     e.preventDefault();
     try {
       const url = `${BASE_URL}/api/inventory/assignItem`;
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         url,
         {
           userId: user.userId,
@@ -52,20 +51,23 @@ export default function EmployeeSelectModal(props) {
   };
 
   const getImageUrl = (imgFile) => {
-    const bufferData = imgFile.buffer;
+    if (imgFile) {
+      const bufferData = imgFile?.buffer;
 
-    const byteCharacters = atob(bufferData);
+      const byteCharacters = atob(bufferData);
 
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
+
+      const imageUrl = URL.createObjectURL(imageBlob);
+      return imageUrl;
     }
-    const byteArray = new Uint8Array(byteNumbers);
-
-    const imageBlob = new Blob([byteArray], { type: imgFile.mimetype });
-
-    const imageUrl = URL.createObjectURL(imageBlob);
-    return imageUrl;
+    return null;
   };
 
   const onClose = () => {
@@ -76,14 +78,11 @@ export default function EmployeeSelectModal(props) {
     setSelectedEmployee(employeeId);
   };
 
-  const handleAssignItem = () => {
-    console.log("item is", item);
-    console.log({
-      userId: user.userId,
-      employeeId: selectedEmployee,
-      groupId: item?.groupId,
-      itemId: item.id,
-    });
+  const getPlaceholderImage = (gender) => {
+    if (gender === "FEMALE") {
+      return "/images/female-employee.png";
+    }
+    return "/images/male-employee.jpeg";
   };
 
   useEffect(() => {
@@ -100,7 +99,7 @@ export default function EmployeeSelectModal(props) {
         {loading ? (
           <LoadingIndicator />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-scroll">
             {employees.map((employee) => (
               <button
                 key={employee.id}
@@ -113,7 +112,11 @@ export default function EmployeeSelectModal(props) {
               >
                 <div className="flex items-center">
                   <img
-                    src={getImageUrl(employee.image)}
+                    src={
+                      employee?.image
+                        ? getImageUrl(employee.image)
+                        : getPlaceholderImage(employee?.gender)
+                    }
                     alt={`${employee.name}'s profile picture`}
                     className="w-10 h-10 rounded-full object-cover mr-3"
                   />

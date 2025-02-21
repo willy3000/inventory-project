@@ -89,6 +89,7 @@ export default function AddItemModal(props) {
               name="itemName"
               value={formData.itemName}
               onChange={handleInputChange}
+              required
             />
           </div>
           <div className="relative">
@@ -98,6 +99,7 @@ export default function AddItemModal(props) {
               name="itemType"
               value={formData.itemType}
               onChange={handleInputChange}
+              required
             >
               <option value="">Select Category</option>
               <option value="software">Software</option>

@@ -6,7 +6,7 @@ import axiosInstance from "../hocs/axiosInstance";
 import { toast } from "react-toastify";
 
 export default function AddUserModal(props) {
-  const { setShowAddUserModal } = props;
+  const { setShowAddUserModal, getInventoryOperators } = props;
   const user = useSelector((state) => state.user.user);
   const fileInputRef = useRef();
 
@@ -26,7 +26,8 @@ export default function AddUserModal(props) {
     },
   });
 
-  const handleAddUser = async () => {
+  const handleAddUser = async (e) => {
+    e.preventDefault();
     const fData = new FormData();
 
     // Append the image file (assuming 'imageFile' is a File object)
@@ -51,6 +52,7 @@ export default function AddUserModal(props) {
       if (res.data.success) {
         // getInventoryUsers();
         toast.success("User Added");
+        getInventoryOperators();
         setFormData({
           username: "",
           email: "",
@@ -87,13 +89,14 @@ export default function AddUserModal(props) {
       <div className="bg-gray-800/90 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-700">
         <div className="flex items-center space-x-2 mb-6">
           <i className="fas fa-plus text-[#6366f1] text-xl"></i>
-          <h3 className="text-xl font-bold text-white">Add New Employee</h3>
+          <h3 className="text-xl font-bold text-white">Add New User</h3>
         </div>
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={handleAddUser}>
           <div className="relative">
             <input
               type="text"
               name="username"
+              required
               placeholder="Username"
               value={formData.username}
               onChange={(e) =>
@@ -106,6 +109,7 @@ export default function AddUserModal(props) {
             <input
               type="email"
               name="email"
+              required
               placeholder="Email Address"
               value={formData.email}
               onChange={(e) =>
@@ -183,15 +187,16 @@ export default function AddUserModal(props) {
                   </span>
                 </span>
                 <button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.preventDefault();
                     setFormData({
                       ...formData,
                       permissions: {
                         ...formData.permissions,
                         [permission]: !formData.permissions[permission],
                       },
-                    })
-                  }
+                    });
+                  }}
                   className="relative w-16 h-8 rounded-full transition-colors duration-300"
                   style={{
                     backgroundColor: formData.permissions[permission]
@@ -219,13 +224,13 @@ export default function AddUserModal(props) {
               Cancel
             </button>
             <button
-              onClick={handleAddUser}
+              type="submit"
               className="flex-1 px-4 py-2 bg-[#6366f1] rounded-lg hover:bg-[#5558e6] transition-all duration-200 text-white"
             >
-              Add Employee
+              Add User
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

@@ -6,12 +6,18 @@ import LoadingIndicator from "../hocs/LoadingIndicator";
 import { BASE_URL } from "@/utils/constants";
 import axiosInstance from "../hocs/axiosInstance";
 
+const departments = ["IT", "Sales", "Accounts"];
+
 export default function EmployeeSelectModal(props) {
   const { setEmployeeSelectModal, user, item, getGroupItems } = props;
   const employees = useSelector((state) => state.employees.employees);
   const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const dispatch = useDispatch();
+  const [filters, setFilters] = useState({
+    searchQuery: null,
+    department: null,
+  });
 
   const getEmployees = async () => {
     const url = `${BASE_URL}/api/employees/getEmployees`;
@@ -96,8 +102,43 @@ export default function EmployeeSelectModal(props) {
           <i className="fas fa-user-plus text-indigo-500 mr-3"></i>
           Select Employee
         </h3>
+        <div className="flex gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={filters.searchQuery}
+            onChange={(e) =>
+              setFilters({ ...filters, searchQuery: e.target.value })
+            }
+            className="flex-1 p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-indigo-500"
+            name="search"
+          />
+          <select
+            onChange={(e) =>
+              setFilters({ ...filters, department: e.target.value })
+            }
+            value={filters.department}
+            className="w-[200px] p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-indigo-500"
+            name="department"
+          >
+            <option value="">All Departments</option>
+            {departments.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
         {loading ? (
           <LoadingIndicator />
+        ) : employees.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <i className="fas fa-users-slash text-4xl mb-4"></i>
+            <p className="text-lg">No employees found</p>
+            <p className="text-sm">
+              Try adjusting your search or filters or add new employees
+            </p>
+          </div>
         ) : (
           <div className="space-y-4 max-h-[70vh] overflow-y-scroll">
             {employees.map((employee) => (

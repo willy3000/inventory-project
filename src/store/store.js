@@ -7,6 +7,7 @@ import operatorsReducer from "./slices/operatorsSlice";
 import roleReducer from "./slices/roleSlice";
 import logsReducer from "./slices/logsSlice";
 import permissionsReducer from "./slices/permissionsSlice";
+import subscriptionReducer from "./slices/subscriptionSlice";
 
 // Create the Redux store
 const store = configureStore({
@@ -19,6 +20,7 @@ const store = configureStore({
     role: roleReducer,
     logs: logsReducer,
     permissions: permissionsReducer,
+    subscription: subscriptionReducer,
   },
 });
 

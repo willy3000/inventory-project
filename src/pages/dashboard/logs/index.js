@@ -10,6 +10,7 @@ import { BASE_URL } from "@/utils/constants";
 import axiosInstance from "@/components/hocs/axiosInstance";
 import LogsTable from "@/components/logs/logs-table";
 import { setLogs } from "@/store/slices/logsSlice";
+import AdminPageGuard from "@/components/auth/admin-page-guard";
 
 export default function ItemGroup() {
   const router = useRouter();
@@ -62,5 +63,9 @@ export default function ItemGroup() {
 }
 
 ItemGroup.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return (
+    <Layout>
+      <AdminPageGuard>{page}</AdminPageGuard>
+    </Layout>
+  );
 };

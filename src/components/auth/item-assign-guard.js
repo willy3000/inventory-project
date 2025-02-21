@@ -18,5 +18,5 @@ export default function ItemAssignGuard({ children }) {
     }
   }, [permissions]);
 
-  return canEdit ? children : <p>None</p>;
+  return canEdit ? children : null;
 }

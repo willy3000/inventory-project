@@ -264,7 +264,7 @@ export default function ItemDetails({ item, onClose }) {
                 onChange={handleInputChange}
               />
               <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                Warranty Expiry Date
+                Purchase Date
               </span>
             </div>
             <div className="relative">
@@ -319,10 +319,7 @@ export default function ItemDetails({ item, onClose }) {
           <div className="flex items-center gap-5 justify-around">
             <p className="text-gray-400">Satus:</p>
             <div className="relative">
-              <button
-                onClick={() => setShowStatusList(!showStatusList)}
-                className="flex items-center space-x-2 text-gray-300 hover:text-white focus:outline-none"
-              >
+              <button className="flex items-center space-x-2 text-gray-300 hover:text-white focus:outline-none">
                 <div
                   className={`flex items-center ${getStatusColor(
                     formData?.status
@@ -333,6 +330,7 @@ export default function ItemDetails({ item, onClose }) {
                   </span>
                   <InventoryEditGuard>
                     <i
+                      onClick={() => setShowStatusList(!showStatusList)}
                       className={`fas fa-chevron-${
                         showStatusList ? "up" : "down"
                       }`}

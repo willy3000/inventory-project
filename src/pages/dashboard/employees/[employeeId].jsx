@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { BASE_URL } from "@/utils/constants";
 import axiosInstance from "@/components/hocs/axiosInstance";
 import { formatDate } from "@/utils/constants";
+import { toast } from "react-toastify";
 
 export default function EmployeeDetails() {
   const [employee, setEmployee] = React.useState(null);
@@ -93,7 +94,7 @@ export default function EmployeeDetails() {
       setEmployee(res.data.result);
       setEditedProfile(res.data.result);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setLoading(false);
   };
@@ -105,7 +106,7 @@ export default function EmployeeDetails() {
       );
       setAssignedItems(res.data.result);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setLoading(false);
   };

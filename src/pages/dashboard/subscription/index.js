@@ -8,36 +8,39 @@ import UsersTable from "@/components/users/users-table";
 import { setOperators } from "@/store/slices/operatorsSlice";
 import AdminPageGuard from "@/components/auth/admin-page-guard";
 import Plans from "@/components/plans/plans";
+import { toast } from "react-toastify";
+import FeaturesModal from "@/components/plans/features-modal";
 
-export default function Users() {
+export default function Subscription() {
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
-  const operators = useSelector((state) => state.operators.operators);
+  const [plans, setPlans] = useState([]);
   const user = useSelector((state) => state.user.user);
 
-  const getInventoryOperators = async () => {
-    const url = `${BASE_URL}/api/operators/getInventoryOperators`;
+
+  const getPlans = async () => {
+    setLoading(true);
+    const url = `${BASE_URL}/api/plans/getPlans`;
     try {
-      const res = await axiosInstance.get(`${url}/${user?.userId}`);
-      dispatch(setOperators(res.data.result));
+      const res = await axiosInstance.get(`${url}`);
+      setPlans(res.data.result);
     } catch (err) {
-      alert(err.message);
+      console.log(err.message);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    getInventoryOperators();
+    getPlans();
   }, []);
 
   if (loading) {
     return <LoadingIndicator />;
   }
 
-  return <Plans {...{ operators, getInventoryOperators }} />;
+  return <Plans {...{ plans, user }} />;
 }
 
-Users.getLayout = function getLayout(page) {
+Subscription.getLayout = function getLayout(page) {
   return (
     <Layout>
       <AdminPageGuard>{page}</AdminPageGuard>

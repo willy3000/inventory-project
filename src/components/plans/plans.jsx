@@ -1,16 +1,34 @@
 import React, { useState } from "react";
 import PaymentModal from "./payment-modal";
+import FeaturesModal from "./features-modal";
+import { useSelector } from "react-redux";
 
-export default function Plans() {
+export default function Plans(props) {
+  const { plans, user } = props;
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = React.useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     React.useState(null);
   const [billingCycle, setBillingCycle] = React.useState("yearly");
+  const [showFeaturesModal, setShowFeaturesModal] = useState(false);
+  const subscription = useSelector((state) => state.subscription.subscription);
+  const planId = subscription?.planId;
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
     setShowPaymentModal(true);
+  };
+
+  const getPlanButtonText = (id) => {
+    if (id === planId) {
+      return "Current Plan";
+    } else {
+      if (planId) {
+        return "Change Plan";
+      }else{
+        return "Choose Plan"
+      }
+    }
   };
 
   return (
@@ -22,28 +40,29 @@ export default function Plans() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/10 mb-4">
             <i className="fas fa-rocket text-2xl text-indigo-400"></i>
           </div>
-          <h3 className="text-xl font-bold text-gray-200 mb-2">Basic</h3>
+          <h3 className="text-xl font-bold text-gray-200 mb-2">
+            {plans[0]?.planName}
+          </h3>
           <div className="text-3xl font-bold text-indigo-400 mb-4">
-            $9.99<span className="text-sm text-gray-400">/month</span>
+            {`$${plans[0]?.price_pm}`}
+            <span className="text-sm text-gray-400">/month</span>
           </div>
           <ul className="text-gray-300 space-y-3 mb-6">
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              Basic Features
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>5 Users
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              10GB Storage
-            </li>
+            {plans[0]?.features.map((feature) => {
+              return (
+                <li className="flex items-center justify-center">
+                  <i className="fas fa-check text-green-400 mr-2"></i>
+                  {feature}
+                </li>
+              );
+            })}
           </ul>
           <button
-            onClick={() => handlePlanSelect({ name: "Basic", price: "9.99" })}
+            onClick={() => handlePlanSelect({ ...plans[0] })}
             className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            Choose Plan
+            {}
+            {getPlanButtonText(plans[0]?.planId)}
           </button>
         </div>
       </div>
@@ -57,33 +76,28 @@ export default function Plans() {
           <div className="inline-block px-3 py-1 bg-yellow-400 text-indigo-900 text-xs font-semibold rounded-full mb-3">
             MOST POPULAR
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
+          <h3 className="text-xl font-bold text-white mb-2">
+            {plans[1]?.planName}
+          </h3>
           <div className="text-3xl font-bold text-white mb-4">
-            $24.99<span className="text-sm text-indigo-200">/month</span>
+            {`$${plans[1]?.price_pm}`}
+            <span className="text-sm text-indigo-200">/month</span>
           </div>
           <ul className="text-white space-y-3 mb-6">
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check mr-2"></i>
-              All Basic Features
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check mr-2"></i>
-              25 Users
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check mr-2"></i>
-              50GB Storage
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check mr-2"></i>
-              Priority Support
-            </li>
+            {plans[1]?.features.map((feature) => {
+              return (
+                <li className="flex items-center justify-center">
+                  <i className="fas fa-check text-green-400 mr-2"></i>
+                  {feature}
+                </li>
+              );
+            })}
           </ul>
           <button
-            onClick={() => handlePlanSelect({ name: "Pro", price: "24.99" })}
+            onClick={() => handlePlanSelect({ ...plans[1] })}
             className="w-full px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            Choose Plan
+            {getPlanButtonText(plans[1]?.planId)}
           </button>
         </div>
       </div>
@@ -94,35 +108,28 @@ export default function Plans() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/10 mb-4">
             <i className="fas fa-building text-2xl text-indigo-400"></i>
           </div>
-          <h3 className="text-xl font-bold text-gray-200 mb-2">Enterprise</h3>
+          <h3 className="text-xl font-bold text-gray-200 mb-2">
+            {plans[2]?.planName}
+          </h3>
           <div className="text-3xl font-bold text-indigo-400 mb-4">
-            $99.99<span className="text-sm text-gray-400">/month</span>
+            {`$${plans[2]?.price_pm}`}
+            <span className="text-sm text-gray-400">/month</span>
           </div>
           <ul className="text-gray-300 space-y-3 mb-6">
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              All Pro Features
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              Unlimited Users
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              500GB Storage
-            </li>
-            <li className="flex items-center justify-center">
-              <i className="fas fa-check text-green-400 mr-2"></i>
-              24/7 Support
-            </li>
+            {plans[2]?.features.map((feature) => {
+              return (
+                <li className="flex items-center justify-center">
+                  <i className="fas fa-check text-green-400 mr-2"></i>
+                  {feature}
+                </li>
+              );
+            })}
           </ul>
           <button
-            onClick={() =>
-              handlePlanSelect({ name: "Enterprise", price: "99.99" })
-            }
+            onClick={() => handlePlanSelect({ ...plans[2] })}
             className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            Choose Plan
+            {getPlanButtonText(plans[2]?.planId)}
           </button>
         </div>
       </div>
@@ -137,6 +144,18 @@ export default function Plans() {
             selectedPlan,
             setSelectedPaymentMethod,
             selectedPaymentMethod,
+            setShowFeaturesModal,
+            user,
+          }}
+        />
+      )}
+      {showFeaturesModal && (
+        <FeaturesModal
+          {...{
+            features: selectedPlan?.features,
+            planName: selectedPlan?.planName,
+            setShowFeaturesModal,
+            user,
           }}
         />
       )}

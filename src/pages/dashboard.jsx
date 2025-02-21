@@ -18,12 +18,43 @@ function Layout({ children }) {
   const user = useSelector((state) => state.user.user);
   const [loading, setLoading] = useState(true);
   const role = useSelector((state) => state.role.role);
+  const subscription = useSelector((state) => state.subscription.subscription);
 
   const isAdmin = () => {
     if (role === "admin") {
       return true;
     }
     return false;
+  };
+
+  console.log("sub is", subscription);
+
+  const getSubscriptionTag = () => {
+    if (subscription?.plan === "Enterprise") {
+      return (
+        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#f2b598] to-[#f46969] text-[#4a3800] rounded-full">
+          Enterprise
+        </span>
+      );
+    } else if (subscription?.plan === "Pro") {
+      return (
+        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#cb6ff6] to-[#f46969] text-[#4a3800] rounded-full">
+          Pro
+        </span>
+      );
+    } else if (subscription?.plan === "Basic") {
+      return (
+        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#1c7640] to-[#009a4d] text-[#4a3800] rounded-full">
+          Basic
+        </span>
+      );
+    } else {
+      return (
+        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#ffffff] to-[#f0f0ff] text-[#4a3800] rounded-full">
+          Free
+        </span>
+      );
+    }
   };
 
   useEffect(() => {
@@ -57,11 +88,7 @@ function Layout({ children }) {
           admin
         </span>
       )}
-      {title === "Subscription" && (
-        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#ffffff] to-[#f0f0ff] text-[#4a3800] rounded-full">
-          free
-        </span>
-      )}
+      {title === "Subscription" && getSubscriptionTag()}
     </button>
   );
 
@@ -344,6 +371,25 @@ function Layout({ children }) {
           <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1">
             <button
               className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+              onClick={() => {}}
+            >
+              <div className="flex items-center">
+                <i className="fas fa-user-circle mr-2"></i>
+                <span>Account</span>
+              </div>
+            </button>
+            <button
+              className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+              onClick={() => {}}
+            >
+              <div className="flex items-center">
+                <i className="fas fa-cog mr-2"></i>
+                <span>Settings</span>
+              </div>
+            </button>
+            <div className="border-t border-gray-700 my-1"></div>
+            <button
+              className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
               onClick={handleLogout}
             >
               {isLoggingOut ? (
@@ -352,7 +398,10 @@ function Layout({ children }) {
                   <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
                 </div>
               ) : (
-                <p>Logout</p>
+                <div className="flex items-center">
+                  <i className="fas fa-sign-out-alt mr-2"></i>
+                  <span>Logout</span>
+                </div>
               )}
             </button>
           </div>
@@ -526,135 +575,195 @@ function Layout({ children }) {
             transform-origin: 50% 0;
           }
         `}</style>
-         <style jsx global>{`
-        @keyframes fadeIn {
-          from {
+        <style jsx global>{`
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+              max-height: 0;
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+              max-height: 500px;
+            }
+          }
+          @keyframes ring {
+            0% {
+              transform: rotate(0deg);
+            }
+            10% {
+              transform: rotate(15deg);
+            }
+            20% {
+              transform: rotate(-15deg);
+            }
+            30% {
+              transform: rotate(10deg);
+            }
+            40% {
+              transform: rotate(-10deg);
+            }
+            50% {
+              transform: rotate(5deg);
+            }
+            60% {
+              transform: rotate(-5deg);
+            }
+            70% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(0deg);
+            }
+          }
+          @keyframes success-pop {
+            0% {
+              transform: scale(0.5);
+              opacity: 0;
+            }
+            50% {
+              transform: scale(1.2);
+            }
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          @keyframes success-circle {
+            0% {
+              transform: scale(0);
+            }
+            50% {
+              transform: scale(1.1);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+          @keyframes success-check {
+            0% {
+              transform: scale(0);
+            }
+            50% {
+              opacity: 0;
+            }
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out;
+          }
+          .animate-slideDown {
+            animation: slideDown 0.3s ease-out forwards;
+            overflow: hidden;
+          }
+          .animate-ring {
+            animation: ring 2s ease-in-out infinite;
+            transform-origin: 50% 0;
+          }
+          .animate-success-pop {
+            animation: success-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+          .animate-success-circle {
+            animation: success-circle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+          .animate-success-check {
+            animation: success-check 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s
+              forwards;
             opacity: 0;
-            transform: translateY(-10px);
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+        `}</style>
+        <style jsx global>{`
+          @keyframes bounceIn {
+            0% {
+              opacity: 0;
+              transform: scale(0.3);
+            }
+            50% {
+              opacity: 0.9;
+              transform: scale(1.1);
+            }
+            80% {
+              opacity: 1;
+              transform: scale(0.89);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
           }
-        }
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-            max-height: 0;
+          .animate-bounceIn {
+            animation: bounceIn 0.6s cubic-bezier(0.87, 0, 0.13, 1);
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-            max-height: 500px;
+        `}</style>
+        <style jsx global>{`
+          @keyframes float {
+            0% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
+            100% {
+              transform: translateY(0px);
+            }
           }
-        }
-        @keyframes ring {
-          0% { transform: rotate(0deg); }
-          10% { transform: rotate(15deg); }
-          20% { transform: rotate(-15deg); }
-          30% { transform: rotate(10deg); }
-          40% { transform: rotate(-10deg); }
-          50% { transform: rotate(5deg); }
-          60% { transform: rotate(-5deg); }
-          70% { transform: rotate(0deg); }
-          100% { transform: rotate(0deg); }
-        }
-        @keyframes success-pop {
-          0% { transform: scale(0.5); opacity: 0; }
-          50% { transform: scale(1.2); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes success-circle {
-          0% { transform: scale(0); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
-        @keyframes success-check {
-          0% { transform: scale(0); }
-          50% { opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out forwards;
-          overflow: hidden;
-        }
-        .animate-ring {
-          animation: ring 2s ease-in-out infinite;
-          transform-origin: 50% 0;
-        }
-        .animate-success-pop {
-          animation: success-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-success-circle {
-          animation: success-circle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-success-check {
-          animation: success-check 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
-          opacity: 0;
-        }
-      `}</style>
-      <style jsx global>{`
-        @keyframes bounceIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.3);
+          @keyframes gradient {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
           }
-          50% {
-            opacity: 0.9;
-            transform: scale(1.1);
+          @keyframes shimmer {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
           }
-          80% {
-            opacity: 1;
-            transform: scale(0.89);
+          @keyframes goldShine {
+            0% {
+              background-position: 200% 50%;
+            }
+            100% {
+              background-position: -200% 50%;
+            }
           }
-          100% {
-            opacity: 1;
-            transform: scale(1);
+          .animate-gradient {
+            animation: gradient 15s ease infinite;
+            background-size: 200% 200%;
           }
-        }
-        .animate-bounceIn {
-          animation: bounceIn 0.6s cubic-bezier(0.87, 0, 0.13, 1);
-        }
-      `}</style>
-      <style jsx global>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes goldShine {
-          0% { background-position: 200% 50%; }
-          100% { background-position: -200% 50%; }
-        }
-        .animate-gradient {
-          animation: gradient 15s ease infinite;
-          background-size: 200% 200%;
-        }
-        .animate-shimmer {
-          animation: shimmer 3s infinite;
-        }
-        .group:hover i {
-          animation: float 2s ease-in-out infinite;
-        }
-        .group:hover .gold-shine {
-          background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
-          background-size: 200% auto;
-          animation: goldShine 6s linear infinite;
-        }
-      `}</style>
+          .animate-shimmer {
+            animation: shimmer 3s infinite;
+          }
+          .group:hover i {
+            animation: float 2s ease-in-out infinite;
+          }
+          .group:hover .gold-shine {
+            background: linear-gradient(90deg, #ffd700, #ffa500, #ffd700);
+            background-size: 200% auto;
+            animation: goldShine 6s linear infinite;
+          }
+        `}</style>
       </div>
     </AuthGuard>
   );

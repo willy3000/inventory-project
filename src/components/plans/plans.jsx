@@ -48,9 +48,9 @@ export default function Plans(props) {
             <span className="text-sm text-gray-400">/month</span>
           </div>
           <ul className="text-gray-300 space-y-3 mb-6">
-            {plans[0]?.features.map((feature) => {
+            {plans[0]?.features.map((index, feature) => {
               return (
-                <li className="flex items-center justify-center">
+                <li className="flex items-center justify-center" key={index}>
                   <i className="fas fa-check text-green-400 mr-2"></i>
                   {feature}
                 </li>
@@ -84,9 +84,9 @@ export default function Plans(props) {
             <span className="text-sm text-indigo-200">/month</span>
           </div>
           <ul className="text-white space-y-3 mb-6">
-            {plans[1]?.features.map((feature) => {
+            {plans[1]?.features.map((index, feature) => {
               return (
-                <li className="flex items-center justify-center">
+                <li className="flex items-center justify-center" key={index}>
                   <i className="fas fa-check text-green-400 mr-2"></i>
                   {feature}
                 </li>
@@ -116,9 +116,9 @@ export default function Plans(props) {
             <span className="text-sm text-gray-400">/month</span>
           </div>
           <ul className="text-gray-300 space-y-3 mb-6">
-            {plans[2]?.features.map((feature) => {
+            {plans[2]?.features.map((index, feature) => {
               return (
-                <li className="flex items-center justify-center">
+                <li className="flex items-center justify-center" key={index}>
                   <i className="fas fa-check text-green-400 mr-2"></i>
                   {feature}
                 </li>

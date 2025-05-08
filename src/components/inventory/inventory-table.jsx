@@ -252,8 +252,8 @@ export default function InventoryTable(props) {
             className="bg-gray-700 border border-gray-600 text-gray-200 px-2 py-1 rounded"
             name="limit"
           >
-            {limitOptions.map((option) => {
-              return <option value={option}>{option}</option>;
+            {limitOptions.map((index, option) => {
+              return <option value={option} key={index}>{option}</option>;
             })}
           </select>
           <span>entries</span>
@@ -293,9 +293,9 @@ export default function InventoryTable(props) {
       {showAddItemModal && (
         <AddItemModal {...{ setShowAddItemModal, getInventoryItems }} />
       )}
-
+{/* 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script> */}
       <style jsx global>{`
         @keyframes fadeIn {
           from {

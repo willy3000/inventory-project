@@ -57,13 +57,7 @@ function Layout({ children }) {
     }
   };
 
-  useEffect(() => {
-    if (router.pathname === "/dashboard") {
-      router.replace("/dashboard/stats");
-    }
-    const currentRoute = router.pathname.split("/")[2] || "stats"; // Default to 'inventory' if no sub-route
-    setActiveTab(currentRoute);
-  }, [router]);
+  
 
   const handleTabChange = (title) => {
     router.push(`/dashboard/${title.toLowerCase()}`);

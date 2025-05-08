@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../hocs/axiosInstance";
-import { BASE_URL } from "@/utils/constants";
+import { BASE_URL, formatPhoneNumber } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setSubscription } from "@/store/slices/subscriptionSlice";
 
@@ -74,6 +74,29 @@ export default function PaymentModal(props) {
     } catch (err) {
       alert(err.message);
     }
+  };
+
+  const initializePayment = async () => {
+    const paymentDetails = {
+      phone: formatPhoneNumber(subscriptionDetails?.mobileNumber),
+      amount: Number(subscriptionDetails?.amount),
+    };
+
+    console.log("Processing payment", paymentDetails);
+
+    try {
+      const url = `${BASE_URL}/api/payment/initializeMpesaStkPush`;
+      const res = await axiosInstance.post(
+        url,
+        { ...paymentDetails },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(res.data);
+    } catch (err) {}
   };
 
   const handlePaymentAndSubscription = async () => {
@@ -380,7 +403,7 @@ export default function PaymentModal(props) {
         </div>
         <button
           onClick={() => {
-            handlePaymentAndSubscription();
+            initializePayment();
           }}
           disabled={
             !subscriptionDetails?.paymentMethod ||

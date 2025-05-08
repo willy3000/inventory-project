@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../dashboard";
+import Layout from "../../dashboard";
 import { useSelector } from "react-redux";
 import LoadingIndicator from "@/components/hocs/LoadingIndicator";
 import axios from "axios";

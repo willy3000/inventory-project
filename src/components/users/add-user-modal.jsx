@@ -124,6 +124,7 @@ export default function AddUserModal(props) {
               name="profileImage"
               accept="image/*"
               onChange={(e) => {
+                e.preventDefault();
                 const file = e.target.files[0];
                 if (file) {
                   const reader = new FileReader();
@@ -143,7 +144,10 @@ export default function AddUserModal(props) {
                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
               />
               <button
-                onClick={() => fileInputRef.current.click()}
+                onClick={(e) => {
+                  e.preventDefault();
+                  fileInputRef.current.click();
+                }}
                 className="px-4 py-2 bg-gray-700/30 rounded-lg hover:bg-gray-600 transition-all duration-200 text-white flex items-center space-x-2"
               >
                 <i className="fas fa-camera"></i>

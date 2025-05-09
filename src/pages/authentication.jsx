@@ -115,6 +115,9 @@ function MainComponent() {
               },
               {
                 withCredentials: true,
+                headers: {
+                  "Content-Type": "application/json"
+                }
               }
             );
             if (res.data.success) {

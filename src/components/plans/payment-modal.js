@@ -3,6 +3,7 @@ import axiosInstance from "../hocs/axiosInstance";
 import { BASE_URL, formatPhoneNumber } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setSubscription } from "@/store/slices/subscriptionSlice";
+import axios from "axios";
 
 const themeColors = {
   dark: {
@@ -41,11 +42,13 @@ export default function PaymentModal(props) {
   const [isProcessingPayment, setIsProcessingPayment] = React.useState(false);
   const [paymentSuccess, setPaymentSuccess] = React.useState(false);
   const [paymentError, setPaymentError] = React.useState(false);
+  const [paymentInitialized, setPaymentInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
   const [subscriptionDetails, setSubscriptionetails] = useState({
     mobileNumber: "",
-    paymentMethod: "credit",
+    paymentMethod: null,
     amount: selectedPlan?.price_pm * 12 * 0.8,
     billingCycle: "yearly",
     planId: selectedPlan?.planId,
@@ -77,6 +80,7 @@ export default function PaymentModal(props) {
   };
 
   const initializePayment = async () => {
+    setIsLoading(true);
     const paymentDetails = {
       phone: formatPhoneNumber(subscriptionDetails?.mobileNumber),
       amount: Number(subscriptionDetails?.amount),
@@ -96,7 +100,31 @@ export default function PaymentModal(props) {
         }
       );
       console.log(res.data);
+      setPaymentInitialized(true);
     } catch (err) {}
+    setIsLoading(false);
+  };
+
+  const validatePayment = async () => {
+    setIsProcessingPayment(true);
+    const reference = "5ew8yfw6wht0vr";
+    try {
+      const url = `${BASE_URL}/api/payment/validateMpesaPayment`;
+      const res = await axios.get(`${url}/${reference}`);
+      console.log(res);
+      if (res.data.success) {
+        console.log("transaction cofirmed");
+        setIsProcessingPayment(false);
+        setPaymentSuccess(true);
+      } else {
+        console.log("transaction failed");
+        setIsProcessingPayment(false);
+        setPaymentError(true);
+      }
+    } catch (err) {
+      setIsProcessingPayment(false);
+      setPaymentError(true);
+    }
   };
 
   const handlePaymentAndSubscription = async () => {
@@ -190,12 +218,14 @@ export default function PaymentModal(props) {
                 Payment failed
               </p>
               <p className="text-gray-300 mt-2">
-                Please try again or use a different payment method
+                Please try again or contact support if issue persists
               </p>
               <div className="flex gap-4 mt-6">
                 <button
                   onClick={() => {
                     setPaymentError(false);
+                    setPaymentSuccess(false);
+                    setPaymentInitialized(false);
                     setSubscriptionetails({
                       ...subscriptionDetails,
                       paymentMethod: null,
@@ -290,7 +320,7 @@ export default function PaymentModal(props) {
           </div>
         </div>
         <div className="space-y-4">
-          <div
+          {/* <div
             onClick={() =>
               setSubscriptionetails({
                 ...subscriptionDetails,
@@ -321,7 +351,7 @@ export default function PaymentModal(props) {
                 Pay with Visa, Mastercard
               </div>
             </div>
-          </div>
+          </div> */}
           <div
             onClick={() =>
               setSubscriptionetails({
@@ -401,29 +431,58 @@ export default function PaymentModal(props) {
             </span>
           </div>
         </div>
-        <button
-          onClick={() => {
-            initializePayment();
-          }}
-          disabled={
-            !subscriptionDetails?.paymentMethod ||
-            isProcessingPayment ||
-            (subscriptionDetails?.paymentMethod === "mpesa" &&
-              !subscriptionDetails?.mobileNumber)
-          }
-          className={`w-full mt-8 px-6 py-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.02] ${
-            subscriptionDetails?.paymentMethod &&
-            !isProcessingPayment &&
-            (subscriptionDetails?.paymentMethod !== "mpesa" ||
-              subscriptionDetails?.mobileNumber)
-              ? "bg-gradient-to-r from-indigo-600 to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-900 shadow-lg shadow-indigo-500/30"
-              : "bg-gray-700 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          {subscriptionDetails?.paymentMethod
-            ? "Continue to Payment"
-            : "Select Payment Method"}
-        </button>
+
+        {paymentInitialized ? (
+          <>
+            <div className="flex items-start gap-3 p-4 mt-4 rounded-2xl bg-green-50 border border-green-500 shadow-sm max-w-md">
+              {/* <Info className="text-green-600 mt-1" size={20} /> */}
+              <p className="text-sm text-green-800 leading-relaxed">
+                Please complete the payment on your mobile device, then click{" "}
+                <strong>Confirm Payment</strong> once you're done.
+              </p>
+            </div>
+            <button
+              onClick={() => validatePayment()}
+              className={
+                "w-full mt-8 px-6 py-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.02] bg-gradient-to-r from-green-600 to-green-800 text-white hover:from-green-700 hover:to-green-900 shadow-lg shadow-green-500/30"
+              }
+            >
+              Confirm Payment
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => {
+              initializePayment();
+            }}
+            disabled={
+              subscriptionDetails?.paymentMethod !== "mpesa" ||
+              isProcessingPayment ||
+              !subscriptionDetails?.mobileNumber
+            }
+            className={`w-full mt-8 px-6 py-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.02] ${
+              subscriptionDetails?.paymentMethod &&
+              !isProcessingPayment &&
+              (subscriptionDetails?.paymentMethod !== "mpesa" ||
+                subscriptionDetails?.mobileNumber)
+                ? "bg-gradient-to-r from-indigo-600 to-indigo-800 text-white hover:from-indigo-700 hover:to-indigo-900 shadow-lg shadow-indigo-500/30"
+                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {subscriptionDetails?.paymentMethod ? (
+              isLoading ? (
+                <span className="flex items-center justify-center">
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  Initializing Payment
+                </span>
+              ) : (
+                <span>Continue to payment</span>
+              )
+            ) : (
+              "Select Payment Method"
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

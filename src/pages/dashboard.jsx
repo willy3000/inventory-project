@@ -57,12 +57,14 @@ function Layout({ children }) {
     }
   };
 
-  
-
   const handleTabChange = (title) => {
     router.push(`/dashboard/${title.toLowerCase()}`);
     setActiveTab(title.toLowerCase());
   };
+
+  useEffect(() => {
+    router.push(`/dashboard/${activeTab!=="" ? activeTab : "stats"}`);
+  }, []);
 
   const DashboardLink = ({ title, icon, isActive }) => (
     <button

@@ -105,12 +105,18 @@ function MainComponent() {
         if (!isLogin) {
           try {
             const url = `${BASE_URL}/api/auth/signUp`;
-            const res = await axios.post(url, {
-              username: formData.username,
-              email: formData.email,
-              password: formData.password,
-              businessName: formData.businessName,
-            });
+            const res = await axios.post(
+              url,
+              {
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                businessName: formData.businessName,
+              },
+              {
+                withCredentials: true,
+              }
+            );
             if (res.data.success) {
               setSignupSuccess(true);
               localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -463,7 +469,7 @@ function MainComponent() {
             text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2
              focus:ring-indigo-500 transition duration-150 ease-in-out"
               onClick={() => {
-                router.push("dashboard");
+                router.push("dashboard/stats");
               }}
             >
               Go to inventory <i className="fas fa-arrow-right ml-2"></i>

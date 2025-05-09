@@ -438,7 +438,7 @@ export default function PaymentModal(props) {
               {/* <Info className="text-green-600 mt-1" size={20} /> */}
               <p className="text-sm text-green-800 leading-relaxed">
                 Please complete the payment on your mobile device, then click{" "}
-                <strong>Confirm Payment</strong> once you're done.
+                <strong>Confirm Payment</strong> once you are done.
               </p>
             </div>
             <button

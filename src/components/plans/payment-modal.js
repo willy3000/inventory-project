@@ -83,7 +83,7 @@ export default function PaymentModal(props) {
     setIsLoading(true);
     const paymentDetails = {
       phone: formatPhoneNumber(subscriptionDetails?.mobileNumber),
-      amount: Number(subscriptionDetails?.amount),
+      amount: subscriptionDetails?.amount,
     };
 
     console.log("Processing payment", paymentDetails);
@@ -99,7 +99,8 @@ export default function PaymentModal(props) {
           },
         }
       );
-      console.log(res.data);
+      console.log("actual reference ", res.data.data.reference);
+      localStorage.setItem("reference_no", res.data.data.reference);
       setPaymentInitialized(true);
     } catch (err) {}
     setIsLoading(false);
@@ -107,15 +108,18 @@ export default function PaymentModal(props) {
 
   const validatePayment = async () => {
     setIsProcessingPayment(true);
-    const reference = "5ew8yfw6wht0vr";
+    const reference = localStorage.getItem("reference_no");
+    console.log("reference_no", reference);
     try {
       const url = `${BASE_URL}/api/payment/validateMpesaPayment`;
       const res = await axios.get(`${url}/${reference}`);
       console.log(res);
       if (res.data.success) {
         console.log("transaction cofirmed");
+        await handleSubscription()
         setIsProcessingPayment(false);
         setPaymentSuccess(true);
+        localStorage.removeItem("reference_no");
       } else {
         console.log("transaction failed");
         setIsProcessingPayment(false);
@@ -127,8 +131,7 @@ export default function PaymentModal(props) {
     }
   };
 
-  const handlePaymentAndSubscription = async () => {
-    setIsProcessingPayment(true);
+  const handleSubscription = async () => {
     try {
       const url = `${BASE_URL}/api/plans/handlePaymentAndSubscription`;
       const res = await axiosInstance.post(
@@ -140,21 +143,8 @@ export default function PaymentModal(props) {
           },
         }
       );
-
-      if (res.data.success) {
-        setIsProcessingPayment(false);
-        setPaymentSuccess(true);
-        setSubscriptionetails({
-          ...subscriptionDetails,
-          paymentMethod: null,
-        });
-      } else {
-        throw new Error("Payment failed");
-      }
     } catch (err) {
       console.log(err.message);
-      setIsProcessingPayment(false);
-      setPaymentError(true);
     }
   };
 

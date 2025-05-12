@@ -92,7 +92,7 @@ export default function PaymentModal(props) {
       const url = `${BASE_URL}/api/payment/initializeMpesaStkPush`;
       const res = await axiosInstance.post(
         url,
-        { ...paymentDetails },
+        { ...paymentDetails, user: user },
         {
           headers: {
             "Content-Type": "application/json",
@@ -110,13 +110,17 @@ export default function PaymentModal(props) {
     setIsProcessingPayment(true);
     const reference = localStorage.getItem("reference_no");
     console.log("reference_no", reference);
+    alert(JSON.stringify(user));
     try {
       const url = `${BASE_URL}/api/payment/validateMpesaPayment`;
-      const res = await axios.get(`${url}/${reference}`);
+      const res = await axios.post(`${url}/${reference}`, {
+        businessName: user?.businessName,
+        email: user?.email,
+      });
       console.log(res);
       if (res.data.success) {
         console.log("transaction cofirmed");
-        await handleSubscription()
+        await handleSubscription();
         setIsProcessingPayment(false);
         setPaymentSuccess(true);
         localStorage.removeItem("reference_no");

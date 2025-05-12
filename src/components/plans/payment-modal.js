@@ -110,7 +110,7 @@ export default function PaymentModal(props) {
     setIsProcessingPayment(true);
     const reference = localStorage.getItem("reference_no");
     console.log("reference_no", reference);
-    alert(JSON.stringify(user));
+    // alert(JSON.stringify(user));
     try {
       const url = `${BASE_URL}/api/payment/validateMpesaPayment`;
       const res = await axios.post(`${url}/${reference}`, {
@@ -216,14 +216,18 @@ export default function PaymentModal(props) {
               </p>
               <div className="flex gap-4 mt-6">
                 <button
+                  // onClick={() => {
+                  //   setPaymentError(false);
+                  //   setPaymentSuccess(false);
+                  //   setPaymentInitialized(false);
+                  //   setSubscriptionetails({
+                  //     ...subscriptionDetails,
+                  //     paymentMethod: null,
+                  //   });
+                  // }}
                   onClick={() => {
                     setPaymentError(false);
-                    setPaymentSuccess(false);
-                    setPaymentInitialized(false);
-                    setSubscriptionetails({
-                      ...subscriptionDetails,
-                      paymentMethod: null,
-                    });
+                    validatePayment();
                   }}
                   className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >

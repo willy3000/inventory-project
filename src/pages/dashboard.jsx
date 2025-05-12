@@ -9,6 +9,7 @@ import { setItems } from "@/store/slices/itemsSlice";
 import axios from "axios";
 import LoadingIndicator from "@/components/hocs/LoadingIndicator";
 import AdminGuard from "@/components/auth/admin-guard";
+import Joyride from "react-joyride";
 
 function Layout({ children }) {
   const [activeTab, setActiveTab] = React.useState("");
@@ -26,6 +27,24 @@ function Layout({ children }) {
     }
     return false;
   };
+
+  const steps = [
+    {
+      target: ".stats-link",
+      content:
+        "This is the navigation bar where you can access different sections.",
+    },
+  ];
+
+    const [runTour, setRunTour] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenTour');
+    if (hasSeenTour) {
+      setRunTour(true);
+      localStorage.setItem('hasSeenTour', false);
+    }
+  }, []);
 
   console.log("sub is", subscription);
 
@@ -58,13 +77,15 @@ function Layout({ children }) {
   };
 
   const handleTabChange = (title) => {
+    console.log('expected', title)
     router.push(`/dashboard/${title.toLowerCase()}`);
     setActiveTab(title.toLowerCase());
   };
 
-  useEffect(() => {
-    router.push(`/dashboard/${activeTab!=="" ? activeTab : "stats"}`);
-  }, []);
+  // useEffect(() => {
+  //   console.log('ROUTE',activeTab)
+  //   router.push(`/dashboard/${activeTab !== "" ? activeTab : "stats"}`);
+  // }, []);
 
   const DashboardLink = ({ title, icon, isActive }) => (
     <button
@@ -77,7 +98,7 @@ function Layout({ children }) {
     >
       <div className="flex items-center space-x-2">
         <i className={`fas ${icon}`}></i>
-        <span>{title}</span>
+        <span className="stats-link">{title}</span>
       </div>
       {(title === "Users" || title === "Logs") && (
         <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#4a3800] rounded-full">
@@ -426,6 +447,17 @@ function Layout({ children }) {
 
   return (
     <AuthGuard>
+      <Joyride
+        steps={steps}
+        run={runTour}
+        continuous
+        showSkipButton
+        styles={{
+          options: {
+            zIndex: 10000,
+          },
+        }}
+      />
       <div className="min-h-screen bg-gray-900 font-sans text-gray-100 h-[60vh]">
         <div className="flex">
           <nav className="bg-gray-800 w-64 h-screen p-5 shadow-sm flex flex-col justify-between">
@@ -761,6 +793,7 @@ function Layout({ children }) {
           }
         `}</style>
       </div>
+      <Joyride />
     </AuthGuard>
   );
 }

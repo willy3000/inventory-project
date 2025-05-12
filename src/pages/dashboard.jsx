@@ -36,13 +36,13 @@ function Layout({ children }) {
     },
   ];
 
-    const [runTour, setRunTour] = useState(false);
+  const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
-    const hasSeenTour = localStorage.getItem('hasSeenTour');
+    const hasSeenTour = localStorage.getItem("hasSeenTour");
     if (hasSeenTour) {
       setRunTour(true);
-      localStorage.setItem('hasSeenTour', false);
+      localStorage.setItem("hasSeenTour", false);
     }
   }, []);
 
@@ -77,7 +77,7 @@ function Layout({ children }) {
   };
 
   const handleTabChange = (title) => {
-    console.log('expected', title)
+    console.log("expected", title);
     router.push(`/dashboard/${title.toLowerCase()}`);
     setActiveTab(title.toLowerCase());
   };
@@ -447,7 +447,7 @@ function Layout({ children }) {
 
   return (
     <AuthGuard>
-      <Joyride
+      {/* <Joyride
         steps={steps}
         run={runTour}
         continuous
@@ -457,7 +457,7 @@ function Layout({ children }) {
             zIndex: 10000,
           },
         }}
-      />
+      /> */}
       <div className="min-h-screen bg-gray-900 font-sans text-gray-100 h-[60vh]">
         <div className="flex">
           <nav className="bg-gray-800 w-64 h-screen p-5 shadow-sm flex flex-col justify-between">
@@ -793,7 +793,7 @@ function Layout({ children }) {
           }
         `}</style>
       </div>
-      <Joyride />
+      {/* <Joyride /> */}
     </AuthGuard>
   );
 }

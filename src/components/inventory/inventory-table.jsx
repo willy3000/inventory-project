@@ -213,8 +213,9 @@ export default function InventoryTable(props) {
                   <img
                     src={
                       item?.image
-                        ? getImageUrl(item?.image)
-                        : "/images/placeholder-image.jpg"
+                      ? item?.image
+                      // ? getImageUrl(item?.image)
+                      : "/images/placeholder-image.jpg"
                     }
                     alt={item?.name}
                     className="w-16 h-16 object-cover rounded-lg shadow-md"

@@ -118,7 +118,8 @@ export default function UsersTable(props) {
                   <img
                     src={
                       operator?.image
-                        ? getImageUrl(operator?.image)
+                        ? operator?.image
+                        // ? getImageUrl(operator?.image)
                         : "/images/user-placeholder.webp"
                     }
                     alt={operator?.username}

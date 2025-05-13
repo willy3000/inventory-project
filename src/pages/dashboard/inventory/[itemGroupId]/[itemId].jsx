@@ -133,7 +133,8 @@ export default function ItemDetails({ item, onClose }) {
         <img
           src={
             employee?.image
-              ? getImageUrl(employee?.image)
+              ? employee?.image
+              // ? getImageUrl(employee?.image)
               : getPlaceholderImage(employee?.gender)
           }
           alt={`${employee?.name}`}

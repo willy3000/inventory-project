@@ -92,7 +92,8 @@ export default function ItemGroupTable(props) {
         <img
           src={
             employee?.image
-              ? getImageUrl(employee?.image)
+              ? employee?.image
+              // ? getImageUrl(employee?.image)
               : getPlaceholderImage(employee?.gender)
           }
           alt={`${employee?.name}`}
@@ -116,7 +117,8 @@ export default function ItemGroupTable(props) {
           <img
             src={
               itemGroup?.image
-                ? getImageUrl(itemGroup?.image)
+                ? itemGroup?.image
+                // ? getImageUrl(itemGroup?.image)
                 : "/images/placeholder-image.jpg"
             }
             alt={itemGroup?.name}

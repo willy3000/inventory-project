@@ -1,15 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Create a slice for managing user information
+// Create a slice for managing subscription information
 const subsriptionSlice = createSlice({
   name: 'subscription',
   initialState: {
-    subscription: null, // Or initialize with default user data
+    subscription: null, // default subscription data
   },
   reducers: {
     setSubscription: (state, action) => {
         console.log(action.payload)
-      state.subscription = action.payload; // Set user information
+      state.subscription = action.payload; // Set subscription information
     },
   },
 });

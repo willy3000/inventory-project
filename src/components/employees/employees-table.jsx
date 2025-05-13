@@ -104,7 +104,8 @@ export default function EmployeesTable(props) {
                   <img
                     src={
                       employee?.image
-                        ? getImageUrl(employee?.image)
+                        ? employee?.image
+                        // ? getImageUrl(employee?.image)
                         : getPlaceholderImage(employee?.gender)
                     }
                     alt={employee.employeeName}

@@ -4,7 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const userSlice = createSlice({
   name: 'user',
   initialState: {
-    user: null, // Or initialize with default user data
+    user: null, // user is null by default
   },
   reducers: {
     setUser: (state, action) => {

@@ -1,6 +1,6 @@
 // export const BASE_URL = "http://192.168.100.6:5000";
-// export const BASE_URL = "https://project-mibm-back-production.up.railway.app";
-export const BASE_URL = "http://localhost:5000";
+export const BASE_URL = "https://project-mibm-back-production.up.railway.app";
+// export const BASE_URL = "http://localhost:5000";
 import CryptoJS from "crypto-js";
 
 export const formatDate = (date) => {
